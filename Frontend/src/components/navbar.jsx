@@ -6,17 +6,17 @@ import '../styles/navbar.css';
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showAuthPopup, setShowAuthPopup] = useState(false);
-  const { isAuthenticated, logout, user, error, clearError } = useUserStore();
+  const { isAuthenticated, logout, user, error, clearError, checkAuth } = useUserStore();
   const navigate = useNavigate();
 
   // Check authentication status on component mount
   useEffect(() => {
     const checkAuthStatus = async () => {
-      await useUserStore.getState().checkAuth();
+      await checkAuth();
     };
     
     checkAuthStatus();
-  }, []);
+  }, [checkAuth]);
 
   // Clear error after 5 seconds
   useEffect(() => {

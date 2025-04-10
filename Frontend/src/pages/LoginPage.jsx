@@ -50,8 +50,11 @@ const LoginPage = () => {
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
-      console.log('Google login success:', credentialResponse);
-      await googleAuth(credentialResponse.credential);
+      var credential = credentialResponse.credential
+      console.log('Google login response:', credential);
+      var response = await googleAuth(credential);
+      console.log("googleAuth response", response)
+      navigate('/FitJourneyDashboard');
     } catch (error) {
       console.error('Google login component error:', error);
       setLoginError('Google login failed. Please try again.');
@@ -59,7 +62,7 @@ const LoginPage = () => {
   };
 
   const handleGoogleError = () => {
-    console.error('Google login failed');
+    console.log("Google not logging in")
     setLoginError('Google login failed. Please try again.');
   };
 
@@ -119,11 +122,10 @@ const LoginPage = () => {
           <GoogleLogin
             onSuccess={handleGoogleSuccess}
             onError={handleGoogleError}
-            useOneTap
+            clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}
             text="continue_with"
             shape="rectangular"
             theme="filled_blue"
-            width="100%"
           />
         </div>
         

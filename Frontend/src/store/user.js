@@ -17,33 +17,39 @@ const useUserStore = create((set, get) => ({
     if (!token) {
       return set({ isAuthenticated: false, user: null });
     }
-    
+
     try {
-      set({ isLoading: true });
-      
       const response = await api.get('/api/users/me');
-      
-      set({
-        user: response.data,
-        isAuthenticated: true,
-        isLoading: false,
-        error: null
-      });
-      
-      return true;
+      console.log(response)
     } catch (error) {
-      console.error('Auth check failed:', error);
-      localStorage.removeItem('token'); // Clear invalid token
-      
-      set({
-        user: null,
-        isAuthenticated: false,
-        isLoading: false,
-        error: error.message || 'Authentication failed'
-      });
-      
-      return false;
+      console.log('Error fetching user data:',error)
     }
+    
+    // try {
+    //   set({ isLoading: true });
+    //   const response = await api.get('/api/users/me');
+      
+    //   set({
+    //     user: response.data,
+    //     isAuthenticated: true,
+    //     isLoading: false,
+    //     error: null
+    //   });
+      
+    //   return true;
+    // } catch (error) {
+    //   console.error('Auth check failed:', error);
+    //   localStorage.removeItem('token'); // Clear invalid token
+      
+    //   set({
+    //     user: null,
+    //     isAuthenticated: false,
+    //     isLoading: false,
+    //     error: error.message || 'Authentication failed'
+    //   });
+      
+    //   return false;
+    // }
   },
 
   // Login user
@@ -104,6 +110,7 @@ const useUserStore = create((set, get) => ({
   // Google authentication
   googleAuth: async (tokenId) => {
     try {
+      console.log("googleTokenID ", tokenId)
       set({ isLoading: true, error: null });
       
       const response = await api.post('/api/users/google', { tokenId });
