@@ -1,7 +1,7 @@
 import express from 'express';
 const router = express.Router();
 import userController from '../controllers/user.controller.js';
-import auth from '../Middleware/auth.js';
+import auth from '../middleware/auth.js';
 
 // @route   POST api/users/register
 // @desc    Register a user

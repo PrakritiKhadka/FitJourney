@@ -2,7 +2,7 @@
 import express from 'express';
 const router = express.Router();
 import profileController from '../controllers/profile.controller.js';
-import auth from '../Middleware/auth.js';
+import auth from '../middleware/auth.js';
 
 // @route   GET api/profiles
 // @desc    Get current user's profile

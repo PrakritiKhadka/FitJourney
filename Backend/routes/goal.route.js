@@ -5,7 +5,7 @@ import {
   updateGoal,
   deleteGoal
 } from '../controllers/goal.controller.js';
-import auth from '../Middleware/auth.js';
+import auth from '../middleware/auth.js';
 
 const router = express.Router();
 
