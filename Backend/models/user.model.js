@@ -4,7 +4,7 @@ const { Schema } = mongoose;
 
 const UserSchema = new Schema({
   name: { type: String, required: true },
-  age: { type: Number, required: true, min: 13 },
+  age: { type: Number, required: false, min: 13 },
   gender: {
     type: String,
     enum: ['male', 'female', 'non-binary', 'prefer-not-to-say'],

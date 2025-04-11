@@ -1,4 +1,11 @@
-export default TokenParser = async (token) => {
+import { OAuth2Client } from 'google-auth-library';
+import { configDotenv } from "dotenv";
+
+configDotenv();
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+
+export const getPayload = async (token) => {
     try {
         if (!token) {
           return res.status(400).json({
@@ -11,13 +18,10 @@ export default TokenParser = async (token) => {
             audience: process.env.GOOGLE_CLIENT_ID,
           });
           
-          return verifiedToken.getPayload();
+          return verifiedToken.payload;
           
       } catch (err) {
         console.error('Google auth error:', err);
-        res.status(500).json({ 
-          message: 'Authentication failed',
-          error: process.env.NODE_ENV === 'development' ? err.message : null
-        });
+        return null;
       }
     }

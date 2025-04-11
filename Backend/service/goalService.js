@@ -1,5 +1,6 @@
 import Goal from '../models/goal.model.js';
 
+
 export const getGoals = async (req, res) => {
   try {
     const goals = await Goal.find({ createdBy: req.user.id })
