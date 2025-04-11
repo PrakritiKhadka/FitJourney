@@ -1,41 +1,38 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import useUserStore from '../store/user';
-import '../styles/navbar.css';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import useUserStore from "../store/user";
+import "../styles/navbar.css";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showAuthPopup, setShowAuthPopup] = useState(false);
-  const { isAuthenticated, logout, user, error, clearError } = useUserStore();
+  const { isAuthenticated, logout, user, error, clearError, checkAuth } =
+    useUserStore();
   const navigate = useNavigate();
 
-  // Check authentication status on component mount
   useEffect(() => {
     const checkAuthStatus = async () => {
-      await useUserStore.getState().checkAuth();
+      await checkAuth();
     };
-    
     checkAuthStatus();
-  }, []);
+  }, [checkAuth, navigate]);
 
-  // Clear error after 5 seconds
   useEffect(() => {
     if (error) {
       const timer = setTimeout(() => {
         clearError();
       }, 5000);
-      
+
       return () => clearTimeout(timer);
     }
   }, [error, clearError]);
 
-  // Hide auth popup after 3 seconds
   useEffect(() => {
     if (showAuthPopup) {
       const timer = setTimeout(() => {
         setShowAuthPopup(false);
       }, 3000);
-      
+
       return () => clearTimeout(timer);
     }
   }, [showAuthPopup]);
@@ -44,9 +41,9 @@ const Navbar = () => {
     setIsOpen(!isOpen);
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
+  const handleLogout = async () => {
+    await logout();
+    navigate("/");
   };
 
   const handleDashboardClick = (e) => {
@@ -58,7 +55,7 @@ const Navbar = () => {
 
   const handleLoginRedirect = () => {
     setShowAuthPopup(false);
-    navigate('/LoginPage');
+    navigate("/LoginPage");
   };
 
   return (
@@ -66,26 +63,34 @@ const Navbar = () => {
       {error && (
         <div className="error-banner">
           {error}
-          <button onClick={clearError} className="close-error">×</button>
+          <button onClick={clearError} className="close-error">
+            ×
+          </button>
         </div>
       )}
-      
+
       {showAuthPopup && (
         <div className="auth-popup">
           <div className="auth-popup-content">
             <p>You need to be logged in to access the Dashboard</p>
             <div className="auth-popup-buttons">
-              <button onClick={handleLoginRedirect} className="login-redirect-button">
+              <button
+                onClick={handleLoginRedirect}
+                className="login-redirect-button"
+              >
                 Go to Login
               </button>
-              <button onClick={() => setShowAuthPopup(false)} className="close-popup-button">
+              <button
+                onClick={() => setShowAuthPopup(false)}
+                className="close-popup-button"
+              >
                 Close
               </button>
             </div>
           </div>
         </div>
       )}
-      
+
       <nav className="navbar">
         <div className="navbar-container">
           <a href="/" className="navbar-logo">
@@ -93,13 +98,13 @@ const Navbar = () => {
           </a>
 
           <div className="menu-icon" onClick={toggleMenu}>
-            <i className={isOpen ? 'fas fa-times' : 'fas fa-bars'} />
+            <i className={isOpen ? "fas fa-times" : "fas fa-bars"} />
           </div>
 
-          <ul className={isOpen ? 'nav-menu active' : 'nav-menu'}>
+          <ul className={isOpen ? "nav-menu active" : "nav-menu"}>
             <li className="nav-item">
-              <a 
-                href="/FitJourneyDashboard" 
+              <a
+                href="/FitJourneyDashboard"
                 className="nav-link"
                 onClick={handleDashboardClick}
               >
@@ -118,11 +123,11 @@ const Navbar = () => {
             </li> */}
           </ul>
 
-          <div className={isOpen ? 'auth-buttons active' : 'auth-buttons'}>
+          <div className={isOpen ? "auth-buttons active" : "auth-buttons"}>
             {isAuthenticated ? (
               <>
                 <span className="user-greeting">
-                  Hello, {user?.name || 'User'}
+                  Hello, {user?.name || "User"}
                 </span>
                 <button onClick={handleLogout} className="logout-button">
                   Log Out

@@ -1,74 +1,93 @@
-// server.js - Main entry point for the fitness tracking app backend
+import express from "express";
+import cors from "cors";
+import bodyParser from "body-parser";
+import dotenv from "dotenv";
 
-import express from 'express';
-import mongoose from 'mongoose';
-import cors from 'cors';
-import bodyParser from 'body-parser';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
+import swaggerUi from "swagger-ui-express";
+import swaggerJSDoc from "swagger-jsdoc";
 
-// Route imports (use .js extension if necessary)
-import authRoutes from './routes/Auth.js';
-import userRoutes from './routes/user.route.js';
-import profileRoutes from './routes/profile.route.js';
-import workoutRoutes from './routes/workout.js';
-// import nutritionRoutes from './routes/nutrition.js';
-import goalRoutes from './routes/goal.route.js';
-// import statsRoutes from './routes/stats.js';
+import routes from "./routes/route.js";
+import { connectDB } from "./config/db.config.js";
+import { corsOptions } from "./config/cors.config.js";
+import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
+import { swaggerOptions } from "./config/swagger.config.js";
 
-// Load environment variables
 dotenv.config();
 
-// Initialize express app
 const app = express();
 const PORT = process.env.PORT || 5000;
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 
-const allowedOrigin = 'http://localhost:5173';
+const startServer = async () => {
+  try {
+    await connectDB();
 
-app.use(cors({
-  origin: allowedOrigin,
-  credentials: true // only if you're using cookies/auth sessions
-}));
-app.use(express.json());
-app.use(bodyParser.json());
+    app.use(cors(corsOptions));
+    app.use(express.json());
+    app.use(bodyParser.json());
 
-// Connect to MongoDB - fixed to use the correct database
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/fitness')
-  .then(() => console.log('MongoDB connected successfully'))
-  .catch(err => console.error('MongoDB connection error:', err));
+    app.use("/api", routes);
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/profiles', profileRoutes);
-app.use('/api/goals', goalRoutes);
-app.use('/api/workouts', workoutRoutes);
-// app.use('/api/nutrition', nutritionRoutes);
-// app.use('/api/stats', statsRoutes);
+    app.get("/", (req, res) => res.send("Fitness Tracker API is running"));
+    app.get("/health", (req, res) => res.status(200).json({ status: "ok" }));
 
-// Root route
-app.get('/', (req, res) => {
-  res.send('Fitness Tracker API is running');
-});
+    app.get("/swagger.json", (req, res) => {
+      res.json(swaggerJSDoc(swaggerOptions)); // Return the OpenAPI JSON spec
+    });
 
-// Health check route
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok' });
-});
+    app.use(
+      "/swagger",
+      swaggerUi.serve,
+      swaggerUi.setup(swaggerJSDoc(swaggerOptions))
+    );
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({
-    success: false,
-    message: 'An unexpected error occurred',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined
-  });
-});
+    app.get("/docs", (req, res) => {
+      res.send(`
+        <!doctype html>
+<html>
+  <head>
+    <title>Scalar API Reference</title>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1" />
+  </head>
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+  <body>
+    <div id="app"></div>
+
+    <!-- Load the Script -->
+    <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
+
+    <!-- Initialize the Scalar API Reference -->
+    <script>
+      Scalar.createApiReference('#app', {
+        // The URL of the OpenAPI/Swagger document
+        url: "http://localhost:${PORT}/swagger.json",
+        // Avoid CORS issues
+        proxyUrl: 'https://proxy.scalar.com',
+      })
+    </script>
+  </body>
+</html>
+      `);
+    });
+
+    // Error Handling Routes
+    app.use(notFoundHandler);
+    app.use(errorHandler);
+
+    app.listen(PORT, () => {
+      console.log(`--------------------------------------------------`);
+      console.log(`|                                                 |`);
+      console.log(`|             FIT JOURNEY BACKEND                 |`);
+      console.log(`|                                                 |`);
+      console.log(`|        Server running on port ${PORT}              |`);
+      console.log(`--------------------------------------------------`);
+    });
+  } catch (error) {
+    console.error("Error starting the server:", error);
+    process.exit(1);
+  }
+};
+
+startServer();

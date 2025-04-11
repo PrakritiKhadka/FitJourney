@@ -20,7 +20,7 @@ const Profile = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        await loadUser();
+        await loadUser;
         setLoading(false);
       } catch (err) {
         setError(err.message || 'Failed to load user data');

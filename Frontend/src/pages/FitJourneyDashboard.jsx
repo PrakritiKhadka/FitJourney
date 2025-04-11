@@ -20,7 +20,7 @@ const FitJourneyDashboard = () => {
       
       <div className="action-buttons">
         <button className="btn btn-primary" onClick={() => navigate("/SetGoals")}>🎯 Set New Goal</button>
-        <button className="btn btn-secondary">📊 View Progress</button>
+        <button className="btn btn-secondary" onClick={() => navigate("/progress")}>📊 View Progress</button>
         <button className="btn btn-accent" onClick={() => navigate("/WorkoutForm")}>➕ Log Workout</button>
       </div>
       

@@ -88,9 +88,6 @@ const AboutUs = () => {
             and personalized recommendations.
           </p>
         </div>
-        <div className="intro-image">
-          <img src="/api/placeholder/400/300" alt="Fit Journey website dashboard" />
-        </div>
       </section>
 
       {/* Stats Section */}
