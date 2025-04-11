@@ -25,9 +25,9 @@ router.put('/profiles', verifyLogin, createOrUpdateProfile);
 router.delete('/profiles')
 
 // Routes for goals
-router.get('goals/', verifyLogin, getGoals);
-router.post('goals/', verifyLogin, createGoal);
-router.put('goals/:id', verifyLogin, updateGoal);
-router.delete('goals/:id', verifyLogin, deleteGoal);
+router.get('/goals', verifyLogin, getGoals);
+router.post('/goals', verifyLogin, createGoal);
+router.put('/goals/:id', verifyLogin, updateGoal);
+router.delete('/goals/:id', verifyLogin, deleteGoal);
 
 export default router;

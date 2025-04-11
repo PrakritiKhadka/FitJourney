@@ -15,6 +15,7 @@ import Profile from "./pages/Profile.jsx";
 import AuthProvider from "./components/AuthProvider";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AuthCallbackPage from "./pages/AuthCallbackPage.jsx";
+import Progress from "./pages/Progress.jsx";
 
 function App() {
   // Fix: Use import.meta.env instead of import.meta.env.REACT_APP_*
@@ -32,36 +33,23 @@ function App() {
             <Route path="/LoginPage" element={<LoginPage />} />
             <Route
               path="/FitJourneyDashboard"
-              element={
-                <ProtectedRoute>
-                  <FitJourneyDashboard />
-                </ProtectedRoute>
-              }
+              element={<FitJourneyDashboard />}
             />
-            <Route
-              path="/WorkoutForm"
-              element={
-                <ProtectedRoute>
-                  <WorkoutForm />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/WorkoutForm" element={<WorkoutForm />} />
             <Route
               path="/SetGoals"
               element={
-                <ProtectedRoute>
                   <SetGoals />
-                </ProtectedRoute>
               }
             />
             <Route
               path="/Profile"
               element={
-                <ProtectedRoute>
                   <Profile />
-                </ProtectedRoute>
               }
             />
+                        <Route path="/progress" element={<Progress />} />
+
             <Route path="/auth/callback" element={<AuthCallbackPage />} />
           </Routes>
           <Footer />
