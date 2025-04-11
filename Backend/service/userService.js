@@ -26,8 +26,9 @@ export const getUserByEmail = async (email) => {
 export const createUser = async (userData) => {
   if (userData.password) {
     // Hash password only for non-Google signups
-    const salt = await bcrypt.genSalt(10);
-    userData.password = await bcrypt.hash(userData.password, salt);
+    const salt = process.env.PASSWORD_SALT || "RTxD+XMmfNSHh5$da2At";
+    var hashedPassword = await bcrypt.hashSync(userData.password + salt); // shows await is useless but is needed
+    userData.password = hashedPassword;
   }
 
   // Save user to database

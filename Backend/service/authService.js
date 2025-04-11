@@ -1,8 +1,11 @@
 import bcrypt from "bcryptjs";
+import { configDotenv } from "dotenv";
 import User from "../models/user.model.js";
 import { getPayload } from "../utils/googleUtil.js";
 import { generateToken } from "../utils/tokenUtil.js";
 import { createUser, getUserByEmail } from "./userService.js";
+
+configDotenv();
 
 export const signupWithGoogle = async (req, res) => {
   const googleToken = req.header("Authorization")?.replace("Bearer ", "");
@@ -104,16 +107,23 @@ export const login = async (req, res) => {
         return res.status(400).json({ message: "Invalid credentials" });
       }
 
-      const isMatch = bcrypt.compare(password, existingUser.password);
-      if (!isMatch) {
-        return res
-          .status(401)
-          .json({ message: "Invalid credentials, provide valid credentials" });
-      }
+      const salt = process.env.PASSWORD_SALT || "RTxD+XMmfNSHh5$da2At";
 
-      const token = generateToken(existingUser.id, existingUser.email);
+      bcrypt.compare(password + salt, existingUser.password, (err, isMatch) => {
+        if (err) {
+          return res.status(401).json({ message: "Login Failed, please provide correct credential or contact us" });
+        }
+      
+        if (!isMatch) {
+          return res
+            .status(401)
+            .json({ message: "Login Failed, provide valid credentials" });
+        }
+        const token = generateToken(existingUser.id, existingUser.email);
 
-      return res.json({ message: "Logged in successfully", token });
+        return res.json({ message: "Logged in successfully", token });
+      });
+
     } else {
       return res
         .status(401)

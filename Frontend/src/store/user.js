@@ -1,7 +1,7 @@
-import { create } from 'zustand';
-import api from '../contexts/axois';
+import { create } from "zustand";
+import api from "../contexts/axois";
 
-const useUserStore = create((set, get) => ({
+const useUserStore = create((set) => ({
   user: null,
   isAuthenticated: false,
   isLoading: false,
@@ -10,71 +10,59 @@ const useUserStore = create((set, get) => ({
   clearError: () => {
     set({ error: null });
   },
-  
+
   // Check if user is authenticated on app load
   checkAuth: async () => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) {
       return set({ isAuthenticated: false, user: null });
     }
 
     try {
-      const response = await api.get('/api/users/me');
-      console.log(response)
+      set({ isLoading: true });
+
+      const response = await api.get("/api/users/me");
+      set({
+        user: response.data,
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+      });
+      return true;
     } catch (error) {
-      console.log('Error fetching user data:',error)
+      console.log("Relogin User");
+      localStorage.removeItem("token");
+      set({
+            user: null,
+            isAuthenticated: false,
+            isLoading: false,
+            error: error.message || 'Authentication failed'
+          });
+      return false;
     }
-    
-    // try {
-    //   set({ isLoading: true });
-    //   const response = await api.get('/api/users/me');
-      
-    //   set({
-    //     user: response.data,
-    //     isAuthenticated: true,
-    //     isLoading: false,
-    //     error: null
-    //   });
-      
-    //   return true;
-    // } catch (error) {
-    //   console.error('Auth check failed:', error);
-    //   localStorage.removeItem('token'); // Clear invalid token
-      
-    //   set({
-    //     user: null,
-    //     isAuthenticated: false,
-    //     isLoading: false,
-    //     error: error.message || 'Authentication failed'
-    //   });
-      
-    //   return false;
-    // }
   },
 
   // Login user
   login: async (email, password) => {
     try {
       set({ isLoading: true, error: null });
+
+      const response = await api.post("/api/login", { email, password });
       
-      const response = await api.post('/api/users/login', { email, password });
-      
-      // Store token and user data properly
-      localStorage.setItem('token', response.data.token);
-      
+      localStorage.setItem("token", response.data.token);
+
       set({
-        user: response.data.user, 
         isAuthenticated: true,
         isLoading: false,
-        error: null
+        error: null,
       });
-      
+
       return response.data;
     } catch (error) {
-      console.error('Login error:', error);
+      console.error("Login error:", error);
       set({
         isLoading: false,
-        error: error.message || 'Login failed'
+        error: error.message || "Login failed",
       });
       throw error;
     }
@@ -84,24 +72,24 @@ const useUserStore = create((set, get) => ({
   register: async (userData) => {
     try {
       set({ isLoading: true, error: null });
-      
-      const response = await api.post('/api/users/register', userData);
-      
+
+      const response = await api.post("/api/users/register", userData);
+
       // Store token and user
-      localStorage.setItem('token', response.data.token);
-      
+      localStorage.setItem("token", response.data.token);
+
       set({
         user: response.data.user,
         isAuthenticated: true,
         isLoading: false,
-        error: null
+        error: null,
       });
-      
+
       return response.data;
     } catch (error) {
       set({
         isLoading: false,
-        error: error.message || 'Registration failed'
+        error: error.message || "Registration failed",
       });
       throw error;
     }
@@ -110,26 +98,25 @@ const useUserStore = create((set, get) => ({
   // Google authentication
   googleAuth: async (tokenId) => {
     try {
-      console.log("googleTokenID ", tokenId)
       set({ isLoading: true, error: null });
-      
-      const response = await api.post('/api/users/google', { tokenId });
-      
+
+      localStorage.setItem("token", tokenId);
+      const response = await api.post("/api/login");
+
       // Store token and user
-      localStorage.setItem('token', response.data.token);
-      
+      localStorage.setItem("token", response.data.token);
+
       set({
-        user: response.data.user,
         isAuthenticated: true,
         isLoading: false,
-        error: null
+        error: null,
       });
-      
+
       return response.data;
     } catch (error) {
       set({
         isLoading: false,
-        error: error.message || 'Google authentication failed'
+        error: error.message || "Google authentication failed",
       });
       throw error;
     }
@@ -137,13 +124,13 @@ const useUserStore = create((set, get) => ({
 
   // Logout user
   logout: () => {
-    localStorage.removeItem('token');
+    localStorage.removeItem("token");
     set({
       user: null,
       isAuthenticated: false,
-      error: null
+      error: null,
     });
-  }
+  },
 }));
 
 export default useUserStore;
