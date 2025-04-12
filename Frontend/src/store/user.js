@@ -73,13 +73,12 @@ const useUserStore = create((set) => ({
     try {
       set({ isLoading: true, error: null });
 
-      const response = await api.post("/api/users/register", userData);
+      const response = await api.post("/api/signup/email", userData);
 
       // Store token and user
       localStorage.setItem("token", response.data.token);
 
       set({
-        user: response.data.user,
         isAuthenticated: true,
         isLoading: false,
         error: null,
@@ -102,6 +101,32 @@ const useUserStore = create((set) => ({
 
       localStorage.setItem("token", tokenId);
       const response = await api.post("/api/login");
+
+      // Store token and user
+      localStorage.setItem("token", response.data.token);
+
+      set({
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+      });
+
+      return response.data;
+    } catch (error) {
+      set({
+        isLoading: false,
+        error: error.message || "Google authentication failed",
+      });
+      throw error;
+    }
+  },
+
+  googleSignUp: async (tokenId) => {
+    try {
+      set({ isLoading: true, error: null });
+
+      localStorage.setItem("token", tokenId);
+      const response = await api.post("/api/signup/google");
 
       // Store token and user
       localStorage.setItem("token", response.data.token);

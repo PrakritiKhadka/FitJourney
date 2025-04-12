@@ -15,7 +15,7 @@ const SignupPage = () => {
   });
   const [signupError, setSignupError] = useState('');
   
-  const { register, googleAuth, isLoading, isAuthenticated, error, clearError } = useUserStore();
+  const { register, googleSignUp, isLoading, isAuthenticated, error, clearError } = useUserStore();
   const navigate = useNavigate();
 
   // Redirect if already logged in
@@ -66,7 +66,7 @@ const SignupPage = () => {
     }
     
     // Validate password length
-    if (formData.password.length < 8) {
+    if (formData.password.trim().length < 8) {
       setSignupError('Password must be at least 8 characters long');
       return false;
     }
@@ -89,14 +89,12 @@ const SignupPage = () => {
     }
     
     try {
-      // Create a copy of formData without confirmPassword for sending to API
+      // eslint-disable-next-line no-unused-vars
       const { confirmPassword, ...userData } = formData;
-      
-      // Convert age to number for backend validation
+
       userData.age = parseInt(userData.age, 10);
       
       await register(userData);
-      // No need to navigate here - the useEffect will handle it
     } catch (error) {
       console.error('Registration error caught in component:', error);
       setSignupError(error.message || 'Registration failed. Please try again.');
@@ -105,8 +103,7 @@ const SignupPage = () => {
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
-      console.log('Google signup success:', credentialResponse);
-      await googleAuth(credentialResponse.credential);
+      await googleSignUp(credentialResponse.credential);
     } catch (error) {
       console.error('Google signup component error:', error);
       setSignupError('Google signup failed. Please try again.');
@@ -133,7 +130,6 @@ const SignupPage = () => {
             text="signup_with"
             shape="rectangular"
             theme="filled_blue"
-            width="100%"
           />
         </div>
         
