@@ -156,6 +156,48 @@ const useUserStore = create((set) => ({
       error: null,
     });
   },
+  // In useUserStore, add the following function:
+loadUser: async () => {
+  try {
+    set({ isLoading: true, error: null });
+    const response = await api.get("/api/users/me");
+    set({
+      user: response.data,
+      isAuthenticated: true,
+      isLoading: false,
+      error: null,
+    });
+    return response.data;
+  } catch (error) {
+    set({
+      isLoading: false,
+      error: error.response?.data?.message || "Failed to load user data",
+    });
+    throw error;
+  }
+},
+
+updateProfile: async (userData) => {
+  try {
+    set({ isLoading: true, error: null });
+    
+    const response = await api.put("/api/users/me", userData);
+    
+    set({
+      user: response.data,
+      isLoading: false,
+      error: null,
+    });
+    
+    return response.data;
+  } catch (error) {
+    set({
+      isLoading: false,
+      error: error.response?.data?.message || "Profile update failed",
+    });
+    throw error;
+  }
+},
 }));
 
 export default useUserStore;

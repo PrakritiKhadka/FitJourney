@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import useWorkoutStore from '../store/workout.js';
 import '../styles/WorkoutForm.css';
 
@@ -7,10 +7,12 @@ const WorkoutForm = () => {
     formData,
     setField,
     resetForm,
-    submitWorkout
+    submitWorkout,
   } = useWorkoutStore();
   
   const [submitted, setSubmitted] = useState(false);
+  const [successData, setSuccessData] = useState(null);
+  const [showPopup, setShowPopup] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -19,19 +21,74 @@ const WorkoutForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate form data
+    if (!formData.workoutType || !formData.duration || !formData.intensityLevel || !formData.date) {
+      alert('Please fill in all required fields');
+      return;
+    }
+    
+    // Submit the workout
     const result = await submitWorkout();
+    
     if (result.success) {
       setSubmitted(true);
-      setTimeout(() => setSubmitted(false), 3000);
+      // Store data to display in the success popup
+      setSuccessData({
+        workoutType: formData.workoutType,
+        duration: formData.duration,
+        intensityLevel: formData.intensityLevel,
+        date: new Date(formData.date).toLocaleDateString(),
+      });
+      setShowPopup(true);
+      resetForm(); // Reset the form on success
+      
+      // Auto hide the popup after 5 seconds
+      setTimeout(() => {
+        setSubmitted(false);
+        setShowPopup(false);
+      }, 5000);
     } else {
-      alert('Failed to log workout: ' + result.error);
+      alert('Failed to log workout: ' + (result.error || 'Unknown error'));
     }
   };
+
+  // Close popup when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showPopup && !event.target.closest('.success-popup-content')) {
+        setShowPopup(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showPopup]);
 
   const workoutTypes = [
     'Running', 'Walking', 'Cycling', 'Swimming', 'Weight Training', 
     'HIIT', 'Yoga', 'Pilates', 'CrossFit', 'Other'
   ];
+
+  const getIntensityIcon = (level) => {
+    switch(level) {
+      case 'low': return '🚶';
+      case 'medium': return '🏃';
+      case 'high': return '🔥';
+      default: return '🏋️';
+    }
+  };
+
+  const getIntensityColor = (level) => {
+    switch(level) {
+      case 'low': return 'green';
+      case 'medium': return 'blue';
+      case 'high': return 'orange';
+      default: return 'blue';
+    }
+  };
 
   return (
     <div className="form-container">
@@ -41,16 +98,69 @@ const WorkoutForm = () => {
             <span className="icon">🔥</span> Track Workout
           </h2>
 
-          {submitted && (
-            <div className="success-message">
-              <div className="success-content">
-                <div className="success-icon">
-                  <svg className="checkmark" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
+          {/* Enhanced Success Popup */}
+          {showPopup && successData && (
+            <div className="success-popup-overlay">
+              <div className="success-popup-content">
+                <div className="success-popup-header">
+                  <div className="success-icon-container">
+                    <svg className="checkmark-circle" viewBox="0 0 52 52">
+                      <circle className="checkmark-circle-bg" cx="26" cy="26" r="25" fill="none"/>
+                      <circle className="checkmark-circle-fill" cx="26" cy="26" r="25" fill="none"/>
+                      <path className="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                    </svg>
+                  </div>
+                  <h3>Workout Logged Successfully!</h3>
+                  <button className="close-popup" onClick={() => setShowPopup(false)}>×</button>
                 </div>
-                <div className="success-text">
-                  <p>Workout logged successfully!</p>
+                
+                <div className="success-popup-body">
+                  <div className="workout-summary">
+                    <div className="summary-item">
+                      <span className="summary-label">Activity:</span>
+                      <span className="summary-value">{successData.workoutType}</span>
+                    </div>
+                    <div className="summary-item">
+                      <span className="summary-label">Duration:</span>
+                      <span className="summary-value">{successData.duration} minutes</span>
+                    </div>
+                    <div className="summary-item">
+                      <span className="summary-label">Intensity:</span>
+                      <span className={`summary-value intensity-${getIntensityColor(successData.intensityLevel)}`}>
+                        {getIntensityIcon(successData.intensityLevel)} {successData.intensityLevel.charAt(0).toUpperCase() + successData.intensityLevel.slice(1)}
+                      </span>
+                    </div>
+                    <div className="summary-item">
+                      <span className="summary-label">Date:</span>
+                      <span className="summary-value">{successData.date}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="motivation-message">
+                    <p>Great job! Keep up the momentum. 💪</p>
+                    <div className="streak-info">
+                      {/* You could add workout streak information here */}
+                      <span>You're on a roll!</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="success-popup-footer">
+                  <button 
+                    className="view-history-btn"
+                    onClick={() => {
+                      setShowPopup(false);
+                      // You could add navigation to history page here
+                    }}
+                  >
+                    View History
+                  </button>
+                  <button 
+                    className="add-another-btn"
+                    onClick={() => setShowPopup(false)}
+                  >
+                    Add Another Workout
+                  </button>
                 </div>
               </div>
             </div>

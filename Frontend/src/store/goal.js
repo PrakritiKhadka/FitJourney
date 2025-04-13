@@ -17,12 +17,13 @@ const useGoalStore = create((set) => ({
   goals: [],
   loading: false,
   error: null,
-
+  
   fetchGoals: async () => {
     set({ loading: true, error: null });
     try {
       const response = await axios.get('/api/goals');
       set({ goals: response.data, loading: false });
+      return response.data;
     } catch (error) {
       set({
         error: error.response?.data?.message || 'Failed to fetch goals',
@@ -31,21 +32,22 @@ const useGoalStore = create((set) => ({
       throw error;
     }
   },
-
+  
   createGoal: async (goalData) => {
     try {
       const response = await axios.post('/api/goals', goalData);
       
-      set((state) => ({ 
+      set((state) => ({
         goals: [response.data, ...state.goals]
       }));
       
       return response.data;
     } catch (error) {
+      set({ error: error.response?.data?.message || 'Failed to create goal' });
       throw error;
     }
   },
-
+  
   updateGoal: async (id, currentValue) => {
     try {
       const response = await axios.put(`/api/goals/${id}`, { currentValue });
@@ -58,10 +60,11 @@ const useGoalStore = create((set) => ({
       
       return response.data;
     } catch (error) {
+      set({ error: error.response?.data?.message || 'Failed to update goal' });
       throw error;
     }
   },
-
+  
   deleteGoal: async (id) => {
     try {
       await axios.delete(`/api/goals/${id}`);
@@ -70,6 +73,7 @@ const useGoalStore = create((set) => ({
         goals: state.goals.filter(goal => goal._id !== id)
       }));
     } catch (error) {
+      set({ error: error.response?.data?.message || 'Failed to delete goal' });
       throw error;
     }
   }

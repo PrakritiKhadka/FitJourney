@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 
 const useWorkoutStore = create((set, get) => ({
+  workouts: [],
+  isLoading: false,
+  error: null,
   formData: {
     workoutType: '',
     duration: '',
@@ -10,12 +13,12 @@ const useWorkoutStore = create((set, get) => ({
     notes: ''
   },
   
-  setField: (name, value) =>
+  setField: (name, value) => 
     set((state) => ({
       formData: {
         ...state.formData,
-        [name]: value
-      }
+        [name]: name === 'duration' ? parseInt(value, 10) || 0 : value,
+      },
     })),
   
   resetForm: () =>
@@ -32,26 +35,74 @@ const useWorkoutStore = create((set, get) => ({
   
   submitWorkout: async () => {
     const { formData } = get();
-    console.log("Submitting workout data:", formData);
+    set({ isLoading: true, error: null });
     
     try {
-      const res = await fetch('http://localhost:5000/api/workouts/add', {
+      // Ensure duration is properly formatted
+      const preparedData = {
+        ...formData,
+        duration: parseInt(formData.duration, 10) || 0
+      };
+      
+      const response = await fetch('/api/workouts', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        headers: {
+          'Content-Type': 'application/json',
+          // Add authorization header if you're using tokens
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(preparedData),
       });
       
-      const data = await res.json();
-      console.log("Server response:", data);
+      const data = await response.json();
       
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to save workout');
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to log workout');
       }
       
-      return { success: true };
-    } catch (err) {
-      console.error('Error:', err.message);
-      return { success: false, error: err.message };
+      // Update state with the new workout
+      set({
+        workouts: [...get().workouts, data.data],
+        isLoading: false
+      });
+      
+      return { success: true, data: data.data };
+    } catch (error) {
+      console.error('Error adding workout:', error);
+      set({ error: error.message, isLoading: false });
+      return { success: false, error: error.message };
+    }
+  },
+  
+  // Add fetchWorkouts function to get all workouts
+  fetchWorkouts: async () => {
+    set({ isLoading: true, error: null });
+    
+    try {
+      const response = await fetch('/api/workouts', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to fetch workouts');
+      }
+      
+      set({
+        workouts: data.data,
+        isLoading: false
+      });
+      
+      return data.data;
+    } catch (error) {
+      console.error('Error fetching workouts:', error);
+      set({ error: error.message, isLoading: false });
+      return [];
     }
   }
 }));

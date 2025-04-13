@@ -16,145 +16,202 @@ const SetGoals = () => {
     targetValue: ''
   });
   const [updateValues, setUpdateValues] = useState({});
-  const [authChecked, setAuthChecked] = useState(false);
+  const [localError, setLocalError] = useState(null);
 
-  // Check authentication on load
+  // Combined authentication and data fetching
   useEffect(() => {
-    const verifyAuth = async () => {
+    const initializeComponent = async () => {
       try {
-        const isAuthed = await checkAuth();
-        setAuthChecked(true);
-        if (!isAuthed) {
+        // Check auth first
+        await checkAuth();
+        
+        // Fetch goals if authenticated
+        if (isAuthenticated) {
+          await fetchGoals();
+        } else {
           navigate('/login');
         }
       } catch (error) {
-        console.error('Auth check failed:', error);
+        console.error('Initialization failed:', error);
         navigate('/login');
       }
     };
 
-    verifyAuth();
-  }, [checkAuth, navigate]);
+    initializeComponent();
+  }, [checkAuth, isAuthenticated, fetchGoals, navigate]);
 
-  // Fetch goals when authenticated
-  useEffect(() => {
-    if (isAuthenticated && authChecked) {
-      fetchGoals().catch(error => {
-        console.error('Error fetching goals:', error);
-        if (error.response?.status === 401) {
-          navigate('/login');
-        }
-      });
-    }
-  }, [isAuthenticated, authChecked, fetchGoals, navigate]);
-
+  // Form handling
   const handleInputChange = (e) => {
     const { id, value } = e.target;
+    const field = id.replace('goal-', '');
+    
     setNewGoal(prev => ({
       ...prev,
-      [id.replace('goal-', '')]: value
+      [field]: value,
+      // Set initialValue equal to currentValue when that field changes
+      ...(field === 'currentValue' ? { initialValue: value } : {})
     }));
   };
 
+  // Form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validation
+    if (!validateForm()) return;
+    
     try {
-      await createGoal({
+      // Parse numeric values
+      const goalData = {
         ...newGoal,
-        currentValue: parseFloat(newGoal.currentValue) || 0,
-        targetValue: parseFloat(newGoal.targetValue) || 0
-      });
+        currentValue: parseFloat(newGoal.currentValue),
+        targetValue: parseFloat(newGoal.targetValue),
+        initialValue: parseFloat(newGoal.currentValue) // Always use current as initial
+      };
       
-      // Clear form after successful submission
-      setNewGoal({
-        title: '',
-        type: 'loss',
-        targetDate: '',
-        currentValue: '',
-        targetValue: ''
-      });
-      
-      // Refresh goals
-      fetchGoals();
+      await createGoal(goalData);
+      resetForm();
+      await fetchGoals();
     } catch (error) {
-      console.error('Error creating goal:', error);
-      if (error.response?.status === 401) {
-        navigate('/login');
-      }
+      handleError(error, 'Failed to create goal');
     }
   };
 
-  const handleUpdateChange = (goalId, value) => {
-    setUpdateValues(prev => ({
-      ...prev,
-      [goalId]: value
-    }));
-  };
-
+  // Update goal value
   const handleUpdateGoal = async (goalId) => {
-    if (!updateValues[goalId] && updateValues[goalId] !== 0) return;
+    const updateValue = updateValues[goalId];
+    
+    if (!updateValue || isNaN(parseFloat(updateValue)) || parseFloat(updateValue) < 0) {
+      setLocalError('Please enter a valid positive number');
+      return;
+    }
     
     try {
-      await updateGoal(goalId, parseFloat(updateValues[goalId]));
+      await updateGoal(goalId, parseFloat(updateValue));
       
-      // Clear the update value after successful update
+      // Clear just this update value
       setUpdateValues(prev => {
         const newValues = {...prev};
         delete newValues[goalId];
         return newValues;
       });
       
-      // Refresh goals to show updated progress
-      fetchGoals();
+      setLocalError(null);
+      await fetchGoals();
     } catch (error) {
-      console.error('Error updating goal:', error);
-      if (error.response?.status === 401) {
-        navigate('/login');
-      }
+      handleError(error, 'Failed to update goal');
     }
   };
 
+  // Delete goal
   const handleDeleteGoal = async (goalId) => {
+    if (!window.confirm('Are you sure you want to delete this goal?')) return;
+    
     try {
       await deleteGoal(goalId);
     } catch (error) {
-      console.error('Error deleting goal:', error);
-      if (error.response?.status === 401) {
-        navigate('/login');
-      }
+      handleError(error, 'Failed to delete goal');
+    }
+  };
+
+  // Helper functions
+  const validateForm = () => {
+    if (!newGoal.title.trim()) {
+      setLocalError('Title is required');
+      return false;
+    }
+    if (!newGoal.targetDate) {
+      setLocalError('Target date is required');
+      return false;
+    }
+    if (isNaN(parseFloat(newGoal.currentValue)) || parseFloat(newGoal.currentValue) < 0) {
+      setLocalError('Current value must be a positive number');
+      return false;
+    }
+    if (isNaN(parseFloat(newGoal.targetValue)) || parseFloat(newGoal.targetValue) < 0) {
+      setLocalError('Target value must be a positive number');
+      return false;
+    }
+    
+    setLocalError(null);
+    return true;
+  };
+
+  const resetForm = () => {
+    setNewGoal({
+      title: '',
+      type: 'loss',
+      targetDate: '',
+      currentValue: '',
+      targetValue: ''
+    });
+  };
+
+  const handleError = (error, defaultMessage) => {
+    console.error('Error:', error);
+    setLocalError(error.response?.data?.message || defaultMessage);
+    
+    if (error.response?.status === 401) {
+      navigate('/login');
     }
   };
 
   const formatDate = (dateString) => {
     if (!dateString) return 'Not set';
-    if (dateString === 'Ongoing') return 'Ongoing';
     
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch (error) {
+      return 'Invalid date';
+    }
   };
 
-  const getProgressColor = (progress, type) => {
+  const calculateProgress = (goal) => {
+    // For maintain goals
+    if (goal.type === 'maintain') {
+      const difference = Math.abs(goal.currentValue - goal.targetValue);
+      const percentDifference = (difference / goal.targetValue) * 100;
+      return percentDifference <= 2 ? 100 : 0;
+    }
+    
+    // For weight loss
+    if (goal.type === 'loss') {
+      if (goal.currentValue <= goal.targetValue) return 100;
+      
+      const initial = goal.initialValue || goal.currentValue;
+      const diff = initial - goal.currentValue;
+      const totalNeeded = initial - goal.targetValue;
+      
+      return Math.min(100, Math.max(0, Math.round((diff / totalNeeded) * 100)));
+    }
+    
+    // For muscle gain
+    if (goal.type === 'gain') {
+      if (goal.currentValue >= goal.targetValue) return 100;
+      
+      const initial = goal.initialValue || goal.currentValue;
+      const diff = goal.currentValue - initial;
+      const totalNeeded = goal.targetValue - initial;
+      
+      return Math.min(100, Math.max(0, Math.round((diff / totalNeeded) * 100)));
+    }
+    
+    return 0;
+  };
+
+  const getProgressColor = (progress) => {
     if (progress >= 80) return 'progress-high';
     if (progress >= 40) return 'progress-medium';
     return 'progress-low';
   };
 
-  // Show loading while checking auth
-  if (!authChecked) {
-    return <div className="loading">Checking authentication...</div>;
-  }
-
-  // Redirect if not authenticated (this is a fallback, the useEffect should handle this)
-  if (!isAuthenticated) {
-    return <div className="loading">Redirecting to login...</div>;
-  }
-
+  // Loading state
   if (loading) return <div className="loading">Loading goals...</div>;
-  if (error) return <div className="error">Error: {error}</div>;
 
   return (
     <div className="container">
@@ -163,6 +220,15 @@ const SetGoals = () => {
         {user && <p>Welcome, {user.name}!</p>}
       </header>
       
+      {/* Error display */}
+      {(error || localError) && (
+        <div className="error-banner">
+          {error || localError}
+          <button onClick={() => setLocalError(null)} className="close-error">×</button>
+        </div>
+      )}
+      
+      {/* Create goal form */}
       <div className="goal-section">
         <h2>Set New Goal</h2>
         <form onSubmit={handleSubmit}>
@@ -235,70 +301,80 @@ const SetGoals = () => {
         </form>
       </div>
       
+      {/* Goals list */}
       <div className="goal-section">
         <h2>Your Goals</h2>
         {goals.length === 0 ? (
           <div className="no-goals">You haven't set any goals yet. Create one above to get started!</div>
         ) : (
           <div className="goals-list">
-            {goals.map(goal => (
-              <div className="goal-card" key={goal._id}>
-                <div className="goal-header">
-                  <h3>{goal.title}</h3>
-                  <button 
-                    className="delete-btn"
-                    onClick={() => {
-                      if (window.confirm('Are you sure you want to delete this goal?')) {
-                        handleDeleteGoal(goal._id);
-                      }
-                    }}
-                    aria-label="Delete goal"
-                  >
-                    ×
-                  </button>
-                </div>
-                <div className="goal-meta">
-                  <span className={`goal-type ${goal.type}`}>
-                    {goal.type.charAt(0).toUpperCase() + goal.type.slice(1)}
-                  </span>
-                  <span className="goal-date">
-                    Target: {formatDate(goal.targetDate)}
-                  </span>
-                </div>
-                <div className="goal-values">
-                  Current: {goal.currentValue} 
-                  {goal.type !== 'maintain' && ` → Target: ${goal.targetValue}`}
-                </div>
-                <div className="goal-progress">
-                  <div className="progress-bar">
-                    <div 
-                      className={`progress-fill ${getProgressColor(goal.progress, goal.type)}`}
-                      style={{ width: `${goal.progress}%` }}
+            {goals.map(goal => {
+              const progress = calculateProgress(goal);
+              return (
+                <div className="goal-card" key={goal._id}>
+                  <div className="goal-header">
+                    <h3>{goal.title}</h3>
+                    <button 
+                      className="delete-btn"
+                      onClick={() => handleDeleteGoal(goal._id)}
+                      aria-label="Delete goal"
                     >
-                      <span className="progress-text">{goal.progress}%</span>
+                      ×
+                    </button>
+                  </div>
+                  
+                  <div className="goal-meta">
+                    <span className={`goal-type ${goal.type}`}>
+                      {goal.type.charAt(0).toUpperCase() + goal.type.slice(1)}
+                    </span>
+                    <span className="goal-date">
+                      Target: {formatDate(goal.targetDate)}
+                    </span>
+                  </div>
+                  
+                  <div className="goal-values">
+                    {goal.initialValue && goal.initialValue !== goal.currentValue && (
+                      <span>Started: {goal.initialValue} → </span>
+                    )}
+                    Current: {goal.currentValue} 
+                    {goal.type !== 'maintain' && ` → Target: ${goal.targetValue}`}
+                  </div>
+                  
+                  <div className="goal-progress">
+                    <div className="progress-bar">
+                      <div 
+                        className={`progress-fill ${getProgressColor(progress)}`}
+                        style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
+                      >
+                        <span className="progress-text">{progress}%</span>
+                      </div>
                     </div>
                   </div>
+                  
+                  <div className="update-section">
+                    <input
+                      type="number"
+                      className="update-input"
+                      placeholder="Update current value"
+                      value={updateValues[goal._id] ?? ''}
+                      onChange={(e) => setUpdateValues({
+                        ...updateValues,
+                        [goal._id]: e.target.value
+                      })}
+                      min="0"
+                      step="0.1"
+                    />
+                    <button 
+                      className="update-btn"
+                      onClick={() => handleUpdateGoal(goal._id)}
+                      disabled={!updateValues[goal._id]}
+                    >
+                      Update
+                    </button>
+                  </div>
                 </div>
-                <div className="update-section">
-                  <input
-                    type="number"
-                    className="update-input"
-                    placeholder="Update current value"
-                    value={updateValues[goal._id] || ''}
-                    onChange={(e) => handleUpdateChange(goal._id, e.target.value)}
-                    min="0"
-                    step="0.1"
-                  />
-                  <button 
-                    className="update-btn"
-                    onClick={() => handleUpdateGoal(goal._id)}
-                    disabled={!updateValues[goal._id] && updateValues[goal._id] !== 0}
-                  >
-                    Update
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

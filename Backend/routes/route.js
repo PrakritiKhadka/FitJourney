@@ -1,10 +1,10 @@
 import express from 'express';
 import {verifyLogin} from "../middleware/authMiddleware.js"
-
 import { createOrUpdateProfile, getProfile } from "../service/profileService.js";
-import { getUser } from "../service/userService.js";
+import { getUser, updateUser  } from "../service/userService.js";
 import { createGoal, deleteGoal, getGoals, updateGoal } from "../service/goalService.js";
 import { login, signUpWithEmail, signupWithGoogle } from '../service/authService.js';
+import { logWorkout, getWorkouts } from "../service/workoutService.js";
 
 const router = express.Router();
 
@@ -16,6 +16,8 @@ router.post('/login', login);
 // Routes for users
 router.post('/users/register');
 router.get('/users/me', verifyLogin, getUser);
+router.put('/users/me', verifyLogin, updateUser); // Updated to use the new controller function
+router.put('/users/profile', verifyLogin, createOrUpdateProfile); // Keep this for fitness profile data
 router.delete('/users/delete');
 
 // Routes for profile
@@ -30,4 +32,7 @@ router.post('/goals', verifyLogin, createGoal);
 router.put('/goals/:id', verifyLogin, updateGoal);
 router.delete('/goals/:id', verifyLogin, deleteGoal);
 
+// Routes for Workout
+router.post('/workouts', verifyLogin, logWorkout);
+router.get('/workouts', verifyLogin, getWorkouts);
 export default router;

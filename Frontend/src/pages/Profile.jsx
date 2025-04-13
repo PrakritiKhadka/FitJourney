@@ -15,12 +15,13 @@ const Profile = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
   // Load user data when component mounts
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        await loadUser;
+        await loadUser();
         setLoading(false);
       } catch (err) {
         setError(err.message || 'Failed to load user data');
@@ -43,6 +44,17 @@ const Profile = () => {
     }
   }, [user]);
 
+  // Auto-hide success popup after 3 seconds
+  useEffect(() => {
+    let timeoutId;
+    if (showSuccessPopup) {
+      timeoutId = setTimeout(() => {
+        setShowSuccessPopup(false);
+      }, 3000);
+    }
+    return () => clearTimeout(timeoutId);
+  }, [showSuccessPopup]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -63,6 +75,7 @@ const Profile = () => {
       await updateProfile(validFormData);
       setIsEditing(false);
       setError(null);
+      setShowSuccessPopup(true);
     } catch (err) {
       console.error("Profile update error:", err);
       setError(err.response?.data?.message || 'Failed to update profile');
@@ -121,6 +134,22 @@ const Profile = () => {
 
   return (
     <div className="profile-container">
+      {/* Success Popup */}
+      {showSuccessPopup && (
+        <div className="success-popup">
+          <div className="success-popup-content">
+            <span className="success-icon">✓</span>
+            <p>Profile updated successfully!</p>
+            <button 
+              onClick={() => setShowSuccessPopup(false)} 
+              className="close-popup-button"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
       <button onClick={handleBackToDashboard} className="back-button">
         ← Back to Dashboard
       </button>
