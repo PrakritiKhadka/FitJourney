@@ -98,73 +98,73 @@ const WorkoutForm = () => {
             <span className="icon">🔥</span> Track Workout
           </h2>
 
-          {/* Enhanced Success Popup */}
-          {showPopup && successData && (
-            <div className="success-popup-overlay">
-              <div className="success-popup-content">
-                <div className="success-popup-header">
-                  <div className="success-icon-container">
-                    <svg className="checkmark-circle" viewBox="0 0 52 52">
-                      <circle className="checkmark-circle-bg" cx="26" cy="26" r="25" fill="none"/>
-                      <circle className="checkmark-circle-fill" cx="26" cy="26" r="25" fill="none"/>
-                      <path className="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-                    </svg>
-                  </div>
-                  <h3>Workout Logged Successfully!</h3>
-                  <button className="close-popup" onClick={() => setShowPopup(false)}>×</button>
+        {/* Enhanced Workout Success Popup */}
+        {showPopup && successData && (
+          <div className="workout-success-overlay">
+            <div className="workout-success-content">
+              <div className="workout-success-header">
+                <div className="workout-icon-container">
+                  <svg className="workout-checkmark-circle" viewBox="0 0 52 52">
+                    <circle className="workout-checkmark-bg" cx="26" cy="26" r="25" fill="none"/>
+                    <circle className="workout-checkmark-fill" cx="26" cy="26" r="25" fill="none"/>
+                    <path className="workout-checkmark" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                  </svg>
                 </div>
-                
-                <div className="success-popup-body">
-                  <div className="workout-summary">
-                    <div className="summary-item">
-                      <span className="summary-label">Activity:</span>
-                      <span className="summary-value">{successData.workoutType}</span>
-                    </div>
-                    <div className="summary-item">
-                      <span className="summary-label">Duration:</span>
-                      <span className="summary-value">{successData.duration} minutes</span>
-                    </div>
-                    <div className="summary-item">
-                      <span className="summary-label">Intensity:</span>
-                      <span className={`summary-value intensity-${getIntensityColor(successData.intensityLevel)}`}>
-                        {getIntensityIcon(successData.intensityLevel)} {successData.intensityLevel.charAt(0).toUpperCase() + successData.intensityLevel.slice(1)}
-                      </span>
-                    </div>
-                    <div className="summary-item">
-                      <span className="summary-label">Date:</span>
-                      <span className="summary-value">{successData.date}</span>
-                    </div>
+                <h3>Workout Logged Successfully!</h3>
+                <button className="workout-close-btn" onClick={() => setShowPopup(false)}>×</button>
+              </div>
+              
+              <div className="workout-success-body">
+                <div className="workout-summary-container">
+                  <div className="workout-summary-item">
+                    <span className="workout-summary-label">Activity:</span>
+                    <span className="workout-summary-value">{successData.workoutType}</span>
                   </div>
-                  
-                  <div className="motivation-message">
-                    <p>Great job! Keep up the momentum. 💪</p>
-                    <div className="streak-info">
-                      {/* You could add workout streak information here */}
-                      <span>You're on a roll!</span>
-                    </div>
+                  <div className="workout-summary-item">
+                    <span className="workout-summary-label">Duration:</span>
+                    <span className="workout-summary-value">{successData.duration} minutes</span>
+                  </div>
+                  <div className="workout-summary-item">
+                    <span className="workout-summary-label">Intensity:</span>
+                    <span className={`workout-summary-value workout-intensity-${getIntensityColor(successData.intensityLevel)}`}>
+                      {getIntensityIcon(successData.intensityLevel)} {successData.intensityLevel.charAt(0).toUpperCase() + successData.intensityLevel.slice(1)}
+                    </span>
+                  </div>
+                  <div className="workout-summary-item">
+                    <span className="workout-summary-label">Date:</span>
+                    <span className="workout-summary-value">{successData.date}</span>
                   </div>
                 </div>
                 
-                <div className="success-popup-footer">
-                  <button 
-                    className="view-history-btn"
-                    onClick={() => {
-                      setShowPopup(false);
-                      // You could add navigation to history page here
-                    }}
-                  >
-                    View History
-                  </button>
-                  <button 
-                    className="add-another-btn"
-                    onClick={() => setShowPopup(false)}
-                  >
-                    Add Another Workout
-                  </button>
+                <div className="workout-motivation-message">
+                  <p>Great job! Keep up the momentum. 💪</p>
+                  <div className="workout-streak-info">
+                    {/* You could add workout streak information here */}
+                    <span>You're on a roll!</span>
+                  </div>
                 </div>
               </div>
+              
+              <div className="workout-success-footer">
+                <button 
+                  className="workout-history-btn"
+                  onClick={() => {
+                    setShowPopup(false);
+                    // You could add navigation to history page here
+                  }}
+                >
+                  View History
+                </button>
+                <button 
+                  className="workout-another-btn"
+                  onClick={() => setShowPopup(false)}
+                >
+                  Add Another Workout
+                </button>
+              </div>
             </div>
-          )}
+          </div>
+        )}
 
           <form onSubmit={handleSubmit}>
             <div className="form-fields">

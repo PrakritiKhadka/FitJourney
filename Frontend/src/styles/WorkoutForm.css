@@ -260,8 +260,8 @@
     flex-direction: column;
   }
 }
-/* Success popup styles */
-.success-popup-overlay {
+/* Workout Success popup styles */
+.workout-success-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -272,30 +272,30 @@
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  animation: fadeIn 0.3s ease-out;
+  animation: workoutFadeIn 0.3s ease-out;
 }
 
-@keyframes fadeIn {
+@keyframes workoutFadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-.success-popup-content {
+.workout-success-content {
   background-color: white;
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
   width: 90%;
   max-width: 500px;
   overflow: hidden;
-  animation: slideUp 0.4s ease-out;
+  animation: workoutSlideUp 0.4s ease-out;
 }
 
-@keyframes slideUp {
+@keyframes workoutSlideUp {
   from { transform: translateY(30px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
 
-.success-popup-header {
+.workout-success-header {
   background-color: #f8f9fa;
   padding: 20px;
   text-align: center;
@@ -303,13 +303,13 @@
   border-bottom: 1px solid #e9ecef;
 }
 
-.success-popup-header h3 {
+.workout-success-header h3 {
   color: #2d3748;
   margin: 10px 0 0;
   font-size: 1.5rem;
 }
 
-.close-popup {
+.workout-close-btn {
   position: absolute;
   top: 15px;
   right: 15px;
@@ -326,23 +326,23 @@
   border-radius: 50%;
 }
 
-.close-popup:hover {
+.workout-close-btn:hover {
   background-color: rgba(0, 0, 0, 0.05);
   color: #4a5568;
 }
 
-.success-popup-body {
+.workout-success-body {
   padding: 20px;
 }
 
-.workout-summary {
+.workout-summary-container {
   background-color: #f7fafc;
   border-radius: 8px;
   padding: 15px;
   margin-bottom: 15px;
 }
 
-.summary-item {
+.workout-summary-item {
   display: flex;
   justify-content: space-between;
   margin-bottom: 8px;
@@ -350,50 +350,50 @@
   border-bottom: 1px solid #edf2f7;
 }
 
-.summary-item:last-child {
+.workout-summary-item:last-child {
   margin-bottom: 0;
   padding-bottom: 0;
   border-bottom: none;
 }
 
-.summary-label {
+.workout-summary-label {
   font-weight: 600;
   color: #4a5568;
 }
 
-.summary-value {
+.workout-summary-value {
   color: #2d3748;
 }
 
-.intensity-green {
+.workout-intensity-green {
   color: #38a169;
 }
 
-.intensity-blue {
+.workout-intensity-blue {
   color: #3182ce;
 }
 
-.intensity-orange {
+.workout-intensity-orange {
   color: #dd6b20;
 }
 
-.motivation-message {
+.workout-motivation-message {
   text-align: center;
   padding: 10px 0;
 }
 
-.motivation-message p {
+.workout-motivation-message p {
   font-size: 1.1rem;
   color: #2d3748;
   margin-bottom: 5px;
 }
 
-.streak-info {
+.workout-streak-info {
   font-size: 0.9rem;
   color: #718096;
 }
 
-.success-popup-footer {
+.workout-success-footer {
   padding: 15px 20px;
   background-color: #f8f9fa;
   display: flex;
@@ -401,7 +401,7 @@
   border-top: 1px solid #e9ecef;
 }
 
-.view-history-btn, .add-another-btn {
+.workout-history-btn, .workout-another-btn {
   padding: 10px 15px;
   border-radius: 8px;
   font-weight: 600;
@@ -409,69 +409,69 @@
   transition: all 0.2s ease;
 }
 
-.view-history-btn {
+.workout-history-btn {
   background-color: #f7fafc;
   color: #4a5568;
   border: 1px solid #e2e8f0;
 }
 
-.view-history-btn:hover {
+.workout-history-btn:hover {
   background-color: #edf2f7;
 }
 
-.add-another-btn {
+.workout-another-btn {
   background-color: #4299e1;
   color: white;
   border: none;
 }
 
-.add-another-btn:hover {
+.workout-another-btn:hover {
   background-color: #3182ce;
 }
 
 /* Success icon animation */
-.success-icon-container {
+.workout-icon-container {
   position: relative;
   width: 52px;
   height: 52px;
   margin: 0 auto;
 }
 
-.checkmark-circle {
+.workout-checkmark-circle {
   width: 52px;
   height: 52px;
 }
 
-.checkmark-circle-bg {
+.workout-checkmark-bg {
   stroke-dasharray: 166;
   stroke-dashoffset: 166;
   stroke-width: 2;
   stroke-miterlimit: 10;
   stroke: #7ac142;
   fill: none;
-  animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+  animation: workoutStroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
 }
 
-.checkmark-circle-fill {
+.workout-checkmark-fill {
   stroke-dasharray: 166;
   stroke-dashoffset: 166;
   stroke-width: 2;
   stroke-miterlimit: 10;
   stroke: #7ac142;
   fill: white;
-  animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+  animation: workoutStroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
 }
 
-.checkmark-check {
+.workout-checkmark {
   transform-origin: 50% 50%;
   stroke-dasharray: 48;
   stroke-dashoffset: 48;
   stroke-width: 3;
   stroke: #7ac142;
-  animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+  animation: workoutStroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
 }
 
-@keyframes stroke {
+@keyframes workoutStroke {
   100% {
     stroke-dashoffset: 0;
   }
