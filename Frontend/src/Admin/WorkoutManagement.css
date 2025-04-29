@@ -1,0 +1,176 @@
+/* Main Container */
+.workout-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+  }
+  
+  /* Page Header */
+  .page-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  
+  .header-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background-color: #f0f4ff;
+    border-radius: 8px;
+    margin-right: 12px;
+  }
+  
+  .header-icon .icon {
+    color: #4f6ef7;
+    stroke-width: 1.5;
+  }
+  
+  .page-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+  }
+  
+  /* Panel Section */
+  .panel-section {
+    width: 100%;
+    margin-bottom: 24px;
+  }
+  
+  /* Content Card */
+  .content-card {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+  }
+  
+  /* Card Header */
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+  }
+  
+  /* Action Button */
+  .action-button {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    transition: all 0.2s ease;
+  }
+  
+  .action-button.primary {
+    background-color: #4f6ef7;
+    color: white;
+  }
+  
+  .action-button.primary:hover {
+    background-color: #3b5bd9;
+  }
+  
+  /* Table Container */
+  .table-container {
+    padding: 16px 24px;
+    overflow-x: auto;
+  }
+  
+  /* Data Table */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .data-table th, 
+  .data-table td {
+    padding: 12px 16px;
+    text-align: left;
+  }
+  
+  .data-table th {
+    font-weight: 600;
+    color: #666;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .data-table tr {
+    border-bottom: 1px solid #f5f5f5;
+  }
+  
+  .data-table tr:last-child {
+    border-bottom: none;
+  }
+  
+  /* Action Cell */
+  .action-cell {
+    display: flex;
+    gap: 12px;
+  }
+  
+  /* Text Button */
+  .text-button {
+    background: none;
+    border: none;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+  
+  .text-button.edit {
+    color: #4f6ef7;
+  }
+  
+  .text-button.edit:hover {
+    background-color: #f0f4ff;
+  }
+  
+  .text-button.delete {
+    color: #f76464;
+  }
+  
+  .text-button.delete:hover {
+    background-color: #fff0f0;
+  }
+  
+  /* Difficulty Badges - Optional Enhancement */
+  .badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  
+  .badge.beginner {
+    background-color: #e6f7e6;
+    color: #2e8b57;
+  }
+  
+  .badge.intermediate {
+    background-color: #fff8e6;
+    color: #f5a623;
+  }
+  
+  .badge.advanced {
+    background-color: #ffe6e6;
+    color: #f76464;
+  }

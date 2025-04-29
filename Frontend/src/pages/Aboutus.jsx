@@ -15,7 +15,7 @@ const AboutUs = () => {
     },
     {
       id: 2,
-      title: "Yoga for Beginners",
+      title: "Running for fresh mind",
       description: "Gentle flows focused on flexibility and mindfulness.",
       level: "Beginner",
       duration: "45 min/day"
@@ -78,14 +78,10 @@ const AboutUs = () => {
           <h2>Our Mission</h2>
           <p>
             At Fit Journey, we believe fitness tracking should be motivational, not complicated. 
-            Founded in 2020, we've built a powerful yet intuitive platform that helps over 50,000 members 
-            monitor progress, set achievable goals, and celebrate every milestone.
+             we've built a powerful yet intuitive platform that you to be motivated and work hard for your physical health everyday.
           </p>
           <p>
-            Our team of fitness experts, data scientists, and UX specialists have created a system that 
-            adapts to your unique body metrics, exercise patterns, and wellness objectives. Fit Journey isn't 
-            just about counting steps—it's about mapping your complete fitness story with insightful analytics 
-            and personalized recommendations.
+            Your success is our story and your health is our priority .
           </p>
         </div>
       </section>

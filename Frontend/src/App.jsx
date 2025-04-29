@@ -1,6 +1,6 @@
 // App.jsx
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route,useLocation } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
 import Navbar from "./components/navbar.jsx";
@@ -16,7 +16,45 @@ import AuthProvider from "./components/AuthProvider";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AuthCallbackPage from "./pages/AuthCallbackPage.jsx";
 import Progress from "./pages/Progress.jsx";
+import AdminUserManagement from "./Admin/AdminUserManagement.jsx";
+import AdminDashboard from "./Admin/AdminDashboard.jsx";
+import AdminPanel from "./Admin/AdminPanel.jsx";
+import DietPlanManagement from "./Admin/DietPlanManagement.jsx";
+import WorkoutManagement from "./Admin/WorkoutManagement.jsx";
 
+const FooterHandler = () => {
+  const location = useLocation();
+  const noFooterPaths = [
+    "/AdminPanel",
+    "/AdminDashboard",
+    "/WorkoutManagement",
+    "/AdminUserManagement",
+    "/DietPlanManagement",
+  ];
+
+  return (
+    !noFooterPaths.some((path) => location.pathname.startsWith(path)) && (
+      <Footer />
+    )
+  );
+};
+
+const NavbarHandler = () => {
+  const location = useLocation();
+  const noNavbarPaths = [
+    "/AdminPanel",
+    "/AdminDashboard",
+    "/WorkoutManagement",
+    "/AdminUserManagement",
+    "/DietPlanManagement",
+  ];
+
+  return (
+    !noNavbarPaths.some((path) => location.pathname.startsWith(path)) && (
+      <Navbar />
+    )
+  );
+};
 function App() {
   // Fix: Use import.meta.env instead of import.meta.env.REACT_APP_*
   // Vite uses import.meta.env.VITE_* for environment variables
@@ -26,7 +64,7 @@ function App() {
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <AuthProvider>
         <Router>
-          <Navbar />
+          <NavbarHandler />
           <Routes>
             <Route path="/" element={<Aboutus />} />
             <Route path="/SignupPage" element={<SignupPage />} />
@@ -51,8 +89,13 @@ function App() {
                         <Route path="/progress" element={<Progress />} />
 
             <Route path="/auth/callback" element={<AuthCallbackPage />} />
-          </Routes>
-          <Footer />
+            <Route path="/AdminUserManagement" element={<AdminUserManagement/>}/>
+            <Route path="/AdminDashboard" element={<AdminDashboard/>}/>
+            <Route path="/AdminPanel" element={<AdminPanel/>}/>
+            <Route path="/DietPlanManagement" element={<DietPlanManagement/>}/>
+            <Route path="/WorkoutManagement" element={<WorkoutManagement/>}/>
+            </Routes>
+          <FooterHandler/>
         </Router>
       </AuthProvider>
     </GoogleOAuthProvider>
