@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import useUserStore from "../store/user";
 import "../styles/LoginPage.css";
@@ -12,12 +12,16 @@ const LoginPage = () => {
   const { login, googleAuth, isLoading, isAuthenticated, error, clearError } =
     useUserStore();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get the redirect path from location state or default to dashboard
+  const from = location.state?.from?.pathname || "/FitJourneyDashboard";
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/FitJourneyDashboard");
+      navigate(from);
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, from]);
 
   useEffect(() => {
     if (error) {
@@ -40,7 +44,7 @@ const LoginPage = () => {
     try {
       var response = await login(email, password);
       if (response.token) {
-        navigate("/FitJourneyDashboard");
+        navigate(from);
       }
 
     } catch (error) {
@@ -57,7 +61,7 @@ const LoginPage = () => {
       console.log("Google login response:", credential);
       var response = await googleAuth(credential);
       console.log("googleAuth response", response);
-      navigate("/FitJourneyDashboard");
+      navigate(from);
     } catch (error) {
       console.error("Google login component error:", error);
       setLoginError("Google login failed. Please try again.");
