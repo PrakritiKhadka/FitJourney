@@ -1,6 +1,6 @@
 // App.jsx
 import React from "react";
-import { BrowserRouter as Router, Routes, Route,useLocation } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
 import Navbar from "./components/navbar.jsx";
@@ -66,35 +66,96 @@ function App() {
         <Router>
           <NavbarHandler />
           <Routes>
+            {/* Public routes */}
             <Route path="/" element={<Aboutus />} />
             <Route path="/SignupPage" element={<SignupPage />} />
             <Route path="/LoginPage" element={<LoginPage />} />
+            <Route path="/auth/callback" element={<AuthCallbackPage />} />
+
+            {/* Protected routes */}
             <Route
               path="/FitJourneyDashboard"
-              element={<FitJourneyDashboard />}
+              element={
+                <ProtectedRoute>
+                  <FitJourneyDashboard />
+                </ProtectedRoute>
+              }
             />
-            <Route path="/WorkoutForm" element={<WorkoutForm />} />
+            <Route 
+              path="/WorkoutForm" 
+              element={
+                <ProtectedRoute>
+                  <WorkoutForm />
+                </ProtectedRoute>
+              } 
+            />
             <Route
               path="/SetGoals"
               element={
+                <ProtectedRoute>
                   <SetGoals />
+                </ProtectedRoute>
               }
             />
             <Route
               path="/Profile"
               element={
+                <ProtectedRoute>
                   <Profile />
+                </ProtectedRoute>
               }
             />
-                        <Route path="/progress" element={<Progress />} />
-
-            <Route path="/auth/callback" element={<AuthCallbackPage />} />
-            <Route path="/AdminUserManagement" element={<AdminUserManagement/>}/>
-            <Route path="/AdminDashboard" element={<AdminDashboard/>}/>
-            <Route path="/AdminPanel" element={<AdminPanel/>}/>
-            <Route path="/DietPlanManagement" element={<DietPlanManagement/>}/>
-            <Route path="/WorkoutManagement" element={<WorkoutManagement/>}/>
-            </Routes>
+            <Route 
+              path="/progress" 
+              element={
+                <ProtectedRoute>
+                  <Progress />
+                </ProtectedRoute>
+              } 
+            />
+            {/* Admin routes should also be protected */}
+            <Route 
+              path="/AdminUserManagement" 
+              element={
+                <ProtectedRoute>
+                  <AdminUserManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route 
+              path="/AdminDashboard" 
+              element={
+                <ProtectedRoute>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route 
+              path="/AdminPanel" 
+              element={
+                <ProtectedRoute>
+                  <AdminPanel />
+                </ProtectedRoute>
+              }
+            />
+            <Route 
+              path="/DietPlanManagement" 
+              element={
+                <ProtectedRoute>
+                  <DietPlanManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route 
+              path="/WorkoutManagement" 
+              element={
+                <ProtectedRoute>
+                  <WorkoutManagement />
+                </ProtectedRoute>
+              }
+            />
+            {/* Remove catch-all route to allow normal 404 behavior */}
+          </Routes>
           <FooterHandler/>
         </Router>
       </AuthProvider>
