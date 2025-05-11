@@ -21,6 +21,7 @@ import AdminDashboard from "./Admin/AdminDashboard.jsx";
 import AdminPanel from "./Admin/AdminPanel.jsx";
 import DietPlanManagement from "./Admin/DietPlanManagement.jsx";
 import WorkoutManagement from "./Admin/WorkoutManagement.jsx";
+import AdminProtectedRoute from "./components/AdminProtectedRoute";
 
 const FooterHandler = () => {
   const location = useLocation();
@@ -113,45 +114,45 @@ function App() {
                 </ProtectedRoute>
               } 
             />
-            {/* Admin routes should also be protected */}
+            {/* Admin routes should be protected with AdminProtectedRoute */}
             <Route 
               path="/AdminUserManagement" 
               element={
-                <ProtectedRoute>
+                <AdminProtectedRoute>
                   <AdminUserManagement />
-                </ProtectedRoute>
+                </AdminProtectedRoute>
               }
             />
             <Route 
               path="/AdminDashboard" 
               element={
-                <ProtectedRoute>
+                <AdminProtectedRoute>
                   <AdminDashboard />
-                </ProtectedRoute>
+                </AdminProtectedRoute>
               }
             />
             <Route 
               path="/AdminPanel" 
               element={
-                <ProtectedRoute>
+                <AdminProtectedRoute>
                   <AdminPanel />
-                </ProtectedRoute>
+                </AdminProtectedRoute>
               }
             />
             <Route 
               path="/DietPlanManagement" 
               element={
-                <ProtectedRoute>
+                <AdminProtectedRoute>
                   <DietPlanManagement />
-                </ProtectedRoute>
+                </AdminProtectedRoute>
               }
             />
             <Route 
               path="/WorkoutManagement" 
               element={
-                <ProtectedRoute>
+                <AdminProtectedRoute>
                   <WorkoutManagement />
-                </ProtectedRoute>
+                </AdminProtectedRoute>
               }
             />
             {/* Remove catch-all route to allow normal 404 behavior */}
