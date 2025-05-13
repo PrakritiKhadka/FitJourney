@@ -29,6 +29,7 @@
   }
   
   .search-container {
+    margin-bottom: 1.5rem;
     position: relative;
   }
   
@@ -141,15 +142,15 @@
   }
   
   .users-table th {
-    padding: 0.75rem 1.5rem;
+    padding: 1rem 1.5rem;
     text-align: left;
-    font-size: 0.75rem;
-    font-weight: 500;
+    font-size: 0.875rem;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: #6b7280;
-    background-color: #f9fafb;
-    border-bottom: 1px solid #e5e7eb;
+    color: #374151;
+    background-color: #d5d7db;
+    border-bottom: 2px solid #e5e7eb;
   }
   
   .users-table td {
@@ -223,4 +224,32 @@
   .user-count {
     font-size: 0.875rem;
     color: #4b5563;
+  }
+
+  /* Navbar Styles */
+  .navbar {
+    background-color: #2c3e50;
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    color: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
+  
+  .navbar-brand {
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .greeting-text {
+    font-weight: bold;
+    font-size: 20px; /* equivalent to text-2xl */
+    color: #ccd7a0;     /* darker neutral tone for better contrast */
+    display: inline-block;
+    margin-bottom: 10px;
   }

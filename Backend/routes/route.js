@@ -1,7 +1,7 @@
 import express from 'express';
 import {verifyLogin} from "../middleware/authMiddleware.js"
 import { createOrUpdateProfile, getProfile } from "../service/profileService.js";
-import { getUser, updateUser  } from "../service/userService.js";
+import { getUser, updateUser, getAllUsers, updateUserByAdmin, deleteUserByAdmin } from "../service/userService.js";
 import { createGoal, deleteGoal, getGoals, updateGoal } from "../service/goalService.js";
 import { login, signUpWithEmail, signupWithGoogle } from '../service/authService.js';
 import { logWorkout, getWorkouts } from "../service/workoutService.js";
@@ -28,6 +28,11 @@ router.get('/users/me', verifyLogin, getUser);
 router.put('/users/me', verifyLogin, updateUser); // Updated to use the new controller function
 router.put('/users/profile', verifyLogin, createOrUpdateProfile); // Keep this for fitness profile data
 router.delete('/users/delete');
+
+// Admin User Management Routes
+router.get('/admin/users', verifyLogin, getAllUsers);
+router.put('/admin/users/:id', verifyLogin, updateUserByAdmin);
+router.delete('/admin/users/:id', verifyLogin, deleteUserByAdmin);
 
 // Routes for profile
 router.get('/profiles', verifyLogin, getProfile);

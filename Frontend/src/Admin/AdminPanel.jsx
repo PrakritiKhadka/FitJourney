@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import useUserStore from '../store/user';
 import './AdminPanel.css';
 import {
   LogOut,
@@ -15,6 +16,8 @@ function AdminPanel() {
     // Add actual logout logic here
     // After logout, you can redirect using the Link component or navigate
   };
+  const { isAuthenticated, logout, user, error, clearError, checkAuth } =
+    useUserStore();
 
   return (
     <div className="app">
@@ -22,8 +25,8 @@ function AdminPanel() {
       <nav className="navbar">
         <div className="navbar-brand">Admin Panel</div>
         <div className="user-info">
-          <div className="user-avatar"></div>
-          <span>Admin User</span>
+          
+          <span className="greeting-text">Hello, {user?.name || "Admin"}</span>
         </div>
         <Link to="/" className="logout-btn" onClick={handleLogout}>
           <LogOut size={20} />

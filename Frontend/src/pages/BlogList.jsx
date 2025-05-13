@@ -11,7 +11,7 @@ const BlogList = () => {
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const response = await axios.get('/api/blogs');
+        const response = await axios.get('/api/blogs/published');
         setBlogs(response.data);
       } catch (error) {
         console.error('Error loading blogs:', error);
@@ -34,7 +34,7 @@ const BlogList = () => {
 
   return (
     <div className="blog-list-container">
-      <h1>Latest Blog Posts</h1>
+      <h1>Latest Blogs</h1>
       {blogs.length === 0 ? (
         <p className="no-blogs">No blog posts available yet.</p>
       ) : (

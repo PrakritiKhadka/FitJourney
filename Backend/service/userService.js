@@ -79,3 +79,58 @@ export const updateUser = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+// Get all users (admin only)
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find({}, '-password -googleId').sort({ createdAt: -1 });
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching users', error: error.message });
+  }
+};
+
+// Update user by admin
+export const updateUserByAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, age, gender } = req.body;
+
+    // Validate input
+    if (!name || !age || !gender) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Update only allowed fields
+    user.name = name;
+    user.age = age;
+    user.gender = gender;
+
+    await user.save();
+    res.json({ message: 'User updated successfully', user });
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating user', error: error.message });
+  }
+};
+
+// Delete user by admin
+export const deleteUserByAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    await User.findByIdAndDelete(id);
+    res.json({ message: 'User deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting user', error: error.message });
+  }
+};

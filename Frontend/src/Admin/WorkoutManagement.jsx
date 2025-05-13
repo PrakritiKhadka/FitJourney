@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Dumbbell, ArrowLeft, BarChart2, Plus } from 'lucide-react';
 import './WorkoutManagement.css';
 import WorkoutForm from '../pages/WorkoutForm';
+import useUserStore from "../store/user";
+
 
 // Workout Management Component
 function WorkoutManagement() {
@@ -23,6 +25,8 @@ function WorkoutManagement() {
   // Separate admin and user workouts
   const adminWorkouts = workouts.filter(w => w.isAdminWorkout);
   const userWorkouts = workouts.filter(w => !w.isAdminWorkout);
+
+  const { isAuthenticated, logout, user, err, clearError, checkAuth } = useUserStore();
 
   useEffect(() => {
     fetchWorkouts();
@@ -145,6 +149,16 @@ function WorkoutManagement() {
 
   return (
     <div className="workout-management">
+      <nav className="navbar">
+        <div className="navbar-brand">
+          <div className="back-button-container">
+            <a href="/AdminPanel">Admin Panel</a>
+          </div>
+        </div>
+        <div className="user-info">
+          <span className="greeting-text">Hello, {user?.name || "Admin"}</span>
+        </div>
+      </nav>
       <div className="workout-header">
         <div className="header-left">
           <Dumbbell className="header-icon" />
