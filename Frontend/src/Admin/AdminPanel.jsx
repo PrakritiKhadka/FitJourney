@@ -6,7 +6,8 @@ import {
   Gauge,
   Users,
   Dumbbell,
-  Utensils 
+  Utensils,
+  FileText
 } from 'lucide-react';
 
 function AdminPanel() {
@@ -47,6 +48,10 @@ function AdminPanel() {
         <Link to="/DietPlanManagement" className="square">
           <Utensils className="square-icon" size={32} />
           <h3>Diet Plans</h3>
+        </Link>
+        <Link to="/BlogManagement" className="square">
+          <FileText className="square-icon" size={32} />
+          <h3>Blog Management</h3>
         </Link>
       </div>
     </div>

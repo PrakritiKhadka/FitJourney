@@ -13,28 +13,17 @@ const Profile = () => {
     age: '',
     gender: ''
   });
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
   // Load user data when component mounts
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        await loadUser();
-        setLoading(false);
-      } catch (err) {
-        setError(err.message || 'Failed to load user data');
-        setLoading(false);
-      }
-    };
-
-    fetchUserData();
-  }, [loadUser]);
+    loadUser();
+  }, []);
 
   // Update form data when user data is loaded
   useEffect(() => {
-    if (user) {
+    if (user && !isEditing) {
       setFormData({
         name: user.name || '',
         email: user.email || '',
@@ -42,7 +31,7 @@ const Profile = () => {
         gender: user.gender || 'prefer-not-to-say'
       });
     }
-  }, [user]);
+  }, [user, isEditing]);
 
   // Auto-hide success popup after 3 seconds
   useEffect(() => {
@@ -100,7 +89,7 @@ const Profile = () => {
     navigate('/FitJourneyDashboard');
   };
 
-  if (isUserLoading || loading) {
+  if (isUserLoading) {
     return (
       <div className="profile-loading">
         <div className="loading-text">Loading profile...</div>

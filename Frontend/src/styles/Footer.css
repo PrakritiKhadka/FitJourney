@@ -7,6 +7,14 @@
   padding: 60px 0 20px;
   font-family: 'Poppins', sans-serif;
   border-top: 1px solid #333;
+  position: relative;
+  width: 100vw;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: auto;
+  overflow-x: hidden;
+  border-radius: 0 !important;
+  box-sizing: border-box;
 }
 
 .footer-container {
@@ -16,6 +24,14 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 24px;
+  background-color: transparent;
+}
+
+.footer-section {
+  background-color: #1a1a1a;
+  padding: 20px;
+  border-radius: 0 !important;
+  box-sizing: border-box;
 }
 
 .footer-section h3 {
@@ -114,11 +130,33 @@
   margin-top: 40px;
   padding-top: 20px;
   border-top: 1px solid #333;
+  background-color: transparent;
+  width: 100vw;
+  left: 50%;
+  transform: translateX(-50%);
+  position: relative;
+  border-radius: 0 !important;
+  box-sizing: border-box;
 }
 
 .footer-bottom p {
   color: #757575;
   font-size: 0.9rem;
+}
+
+/* Add these new styles for proper page layout */
+body {
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+main {
+  flex: 1 0 auto;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 @media screen and (max-width: 960px) {

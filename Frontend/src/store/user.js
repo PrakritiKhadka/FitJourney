@@ -6,6 +6,7 @@ const useUserStore = create((set) => ({
   isAuthenticated: false,
   isLoading: false,
   error: null,
+  hasLoadedUser: false,
 
   clearError: () => {
     set({ error: null });
@@ -27,17 +28,19 @@ const useUserStore = create((set) => ({
         isAuthenticated: true,
         isLoading: false,
         error: null,
+        hasLoadedUser: true
       });
       return true;
     } catch (error) {
       console.log("Relogin User");
       localStorage.removeItem("token");
       set({
-            user: null,
-            isAuthenticated: false,
-            isLoading: false,
-            error: error.message || 'Authentication failed'
-          });
+        user: null,
+        isAuthenticated: false,
+        isLoading: false,
+        error: error.message || 'Authentication failed',
+        hasLoadedUser: false
+      });
       return false;
     }
   },
@@ -156,48 +159,55 @@ const useUserStore = create((set) => ({
       error: null,
     });
   },
-  // In useUserStore, add the following function:
-loadUser: async () => {
-  try {
-    set({ isLoading: true, error: null });
-    const response = await api.get("/api/users/me");
-    set({
-      user: response.data,
-      isAuthenticated: true,
-      isLoading: false,
-      error: null,
-    });
-    return response.data;
-  } catch (error) {
-    set({
-      isLoading: false,
-      error: error.response?.data?.message || "Failed to load user data",
-    });
-    throw error;
-  }
-},
 
-updateProfile: async (userData) => {
-  try {
-    set({ isLoading: true, error: null });
-    
-    const response = await api.put("/api/users/me", userData);
-    
-    set({
-      user: response.data,
-      isLoading: false,
-      error: null,
-    });
-    
-    return response.data;
-  } catch (error) {
-    set({
-      isLoading: false,
-      error: error.response?.data?.message || "Profile update failed",
-    });
-    throw error;
-  }
-},
+  loadUser: async () => {
+    const state = useUserStore.getState();
+    if (state.hasLoadedUser && state.user) {
+      return state.user;
+    }
+
+    try {
+      set({ isLoading: true, error: null });
+      const response = await api.get("/api/users/me");
+      set({
+        user: response.data,
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+        hasLoadedUser: true
+      });
+      return response.data;
+    } catch (error) {
+      set({
+        isLoading: false,
+        error: error.response?.data?.message || "Failed to load user data",
+        hasLoadedUser: false
+      });
+      throw error;
+    }
+  },
+
+  updateProfile: async (userData) => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const response = await api.put("/api/users/me", userData);
+      
+      set({
+        user: response.data,
+        isLoading: false,
+        error: null,
+      });
+      
+      return response.data;
+    } catch (error) {
+      set({
+        isLoading: false,
+        error: error.response?.data?.message || "Profile update failed",
+      });
+      throw error;
+    }
+  },
 }));
 
 export default useUserStore;

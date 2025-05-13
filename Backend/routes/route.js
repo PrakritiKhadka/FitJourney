@@ -5,6 +5,15 @@ import { getUser, updateUser  } from "../service/userService.js";
 import { createGoal, deleteGoal, getGoals, updateGoal } from "../service/goalService.js";
 import { login, signUpWithEmail, signupWithGoogle } from '../service/authService.js';
 import { logWorkout, getWorkouts } from "../service/workoutService.js";
+import { 
+  getBlogs, 
+  getPublishedBlogs, 
+  getBlogById,
+  createBlog, 
+  updateBlog, 
+  deleteBlog, 
+  togglePublish 
+} from "../service/blogService.js";
 
 const router = express.Router();
 
@@ -35,4 +44,14 @@ router.delete('/goals/:id', verifyLogin, deleteGoal);
 // Routes for Workout
 router.post('/workouts', verifyLogin, logWorkout);
 router.get('/workouts', verifyLogin, getWorkouts);
+
+// Routes for Blogs
+router.get('/blogs', getBlogs);
+router.get('/blogs/published', getPublishedBlogs);
+router.get('/blogs/:id', getBlogById);
+router.post('/blogs', createBlog);
+router.put('/blogs/:id', updateBlog);
+router.delete('/blogs/:id', deleteBlog);
+router.patch('/blogs/:id/publish', togglePublish);
+
 export default router;

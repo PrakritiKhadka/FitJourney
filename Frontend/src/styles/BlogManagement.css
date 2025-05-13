@@ -1,0 +1,268 @@
+.blog-management {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.blog-form {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+}
+
+.blog-form h3 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-group input[type="text"],
+.form-group input[type="url"] {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.form-group input[type="checkbox"] {
+  margin-right: 8px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.form-actions button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.form-actions button[type="submit"] {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.form-actions button[type="submit"]:hover {
+  background-color: #45a049;
+}
+
+.form-actions button[type="button"] {
+  background-color: #f44336;
+  color: white;
+}
+
+.form-actions button[type="button"]:hover {
+  background-color: #da190b;
+}
+
+/* Tiptap Editor Styles */
+.editor-toolbar {
+  margin-bottom: 10px;
+  padding: 8px;
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px 4px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.editor-toolbar button {
+  padding: 6px 12px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.editor-toolbar button:hover {
+  background: #f0f0f0;
+}
+
+.editor-toolbar button.is-active {
+  background: #e3f2fd;
+  border-color: #2196F3;
+  color: #1976D2;
+}
+
+.editor-container {
+  border: 1px solid #ddd;
+  border-radius: 0 0 4px 4px;
+  padding: 12px;
+  min-height: 200px;
+  background: #fff;
+}
+
+.editor-container .ProseMirror {
+  min-height: 150px;
+  outline: none;
+}
+
+.editor-container .ProseMirror p {
+  margin: 0 0 1em 0;
+}
+
+.editor-container .ProseMirror h1 {
+  font-size: 2em;
+  margin: 0.67em 0;
+}
+
+.editor-container .ProseMirror h2 {
+  font-size: 1.5em;
+  margin: 0.83em 0;
+}
+
+.editor-container .ProseMirror ul,
+.editor-container .ProseMirror ol {
+  padding-left: 2em;
+  margin: 1em 0;
+}
+
+.editor-container .ProseMirror a {
+  color: #2196F3;
+  text-decoration: none;
+}
+
+.editor-container .ProseMirror a:hover {
+  text-decoration: underline;
+}
+
+.editor-container .ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  margin: 1em 0;
+}
+
+/* Blog List Styles */
+.blogs-list {
+  margin-top: 30px;
+}
+
+.blog-item {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.blog-item h3 {
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+.blog-item p {
+  margin: 0 0 15px 0;
+  color: #666;
+}
+
+.blog-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.blog-actions button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.edit-button {
+  background-color: #2196F3;
+  color: white;
+}
+
+.edit-button:hover {
+  background-color: #1976D2;
+}
+
+.delete-button {
+  background-color: #f44336;
+  color: white;
+}
+
+.delete-button:hover {
+  background-color: #d32f2f;
+}
+
+.publish-button {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.publish-button:hover {
+  background-color: #388E3C;
+}
+
+.unpublish-button {
+  background-color: #FF9800;
+  color: white;
+}
+
+.unpublish-button:hover {
+  background-color: #F57C00;
+}
+
+/* Status Badge */
+.status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.status-published {
+  background-color: #E8F5E9;
+  color: #2E7D32;
+}
+
+.status-draft {
+  background-color: #FFF3E0;
+  color: #E65100;
+}
+
+/* Error and Success Messages */
+.error-message,
+.success-message {
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.error-message {
+  background-color: #FFEBEE;
+  color: #C62828;
+  border: 1px solid #FFCDD2;
+}
+
+.success-message {
+  background-color: #E8F5E9;
+  color: #2E7D32;
+  border: 1px solid #C8E6C9;
+} 

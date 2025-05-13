@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import useUserStore from "../store/user";
 import "../styles/navbar.css";
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [showAuthPopup, setShowAuthPopup] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isAuthenticated, logout, user, error, clearError, checkAuth } =
     useUserStore();
   const navigate = useNavigate();
@@ -21,41 +20,19 @@ const Navbar = () => {
     if (error) {
       const timer = setTimeout(() => {
         clearError();
-      }, 5000);
+      }, 5001);
 
       return () => clearTimeout(timer);
     }
   }, [error, clearError]);
 
-  useEffect(() => {
-    if (showAuthPopup) {
-      const timer = setTimeout(() => {
-        setShowAuthPopup(false);
-      }, 3000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [showAuthPopup]);
-
   const toggleMenu = () => {
-    setIsOpen(!isOpen);
+    setIsMenuOpen(!isMenuOpen);
   };
 
   const handleLogout = async () => {
     await logout();
     navigate("/");
-  };
-
-  const handleDashboardClick = (e) => {
-    if (!isAuthenticated) {
-      e.preventDefault();
-      setShowAuthPopup(true);
-    }
-  };
-
-  const handleLoginRedirect = () => {
-    setShowAuthPopup(false);
-    navigate("/LoginPage");
   };
 
   return (
@@ -69,81 +46,44 @@ const Navbar = () => {
         </div>
       )}
 
-      {showAuthPopup && (
-        <div className="auth-popup">
-          <div className="auth-popup-content">
-            <p>You need to be logged in to access the Dashboard</p>
-            <div className="auth-popup-buttons">
-              <button
-                onClick={handleLoginRedirect}
-                className="login-redirect-button"
-              >
-                Go to Login
-              </button>
-              <button
-                onClick={() => setShowAuthPopup(false)}
-                className="close-popup-button"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       <nav className="navbar">
-        <div className="navbar-container">
-          <a href="/" className="navbar-logo">
-            Fit Journey
-          </a>
+        <div className="navbar-brand">
+          <Link to="/">FitJourney</Link>
+          <button className="menu-toggle" onClick={toggleMenu}>
+            <span className={`hamburger ${isMenuOpen ? 'open' : ''}`}></span>
+          </button>
+        </div>
+        
+        <div className={`navbar-menu ${isMenuOpen ? 'active' : ''}`}>
+          <Link to="/" onClick={() => setIsMenuOpen(false)}>Home</Link>
+          <Link to="/blog" onClick={() => setIsMenuOpen(false)}>Blog</Link>
+          {isAuthenticated && (
+            <>
+              <Link to="/FitJourneyDashboard" onClick={() => setIsMenuOpen(false)}>Dashboard</Link>
+            </>
+          )}
+        </div>
 
-          <div className="menu-icon" onClick={toggleMenu}>
-            <i className={isOpen ? "fas fa-times" : "fas fa-bars"} />
-          </div>
-
-          <ul className={isOpen ? "nav-menu active" : "nav-menu"}>
-            <li className="nav-item">
-              <a
-                href="/FitJourneyDashboard"
-                className="nav-link"
-                onClick={handleDashboardClick}
-              >
-                Dashboard
-              </a>
-            </li>
-            <li className="nav-item">
-              <a href="/contact" className="nav-link">
-                Contact Us
-              </a>
-            </li>
-            {/* <li className="nav-item">
-              <a href="/Aboutus" className="nav-link">
-                About Us
-              </a>
-            </li> */}
-          </ul>
-
-          <div className={isOpen ? "auth-buttons active" : "auth-buttons"}>
-            {isAuthenticated ? (
-              <>
-                <span className="user-greeting">
-                  Hello, {user?.name || "User"}
-                </span>
-                <button onClick={handleLogout} className="logout-button">
-                  Log Out
-                </button>
-              </>
-            ) : (
-              <>
-                <a href="/LoginPage" className="login-button">
-                  Log In
-                </a>
-                <a href="/SignupPage" className="signup-button">
-                  Sign Up
-                </a>
-              </>
-            )}
-          </div>
+        <div className={isMenuOpen ? "auth-buttons active" : "auth-buttons"}>
+          {isAuthenticated ? (
+            <>
+              <span className="user-greeting">
+                Hello, {user?.name || "User"}
+              </span>
+              <button onClick={handleLogout} className="logout-button">
+                Log Out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/LoginPage" className="login-button">
+                Log In
+              </Link>
+              <Link to="/SignupPage" className="signup-button">
+                Sign Up
+              </Link>
+            </>
+          )}
         </div>
       </nav>
     </>

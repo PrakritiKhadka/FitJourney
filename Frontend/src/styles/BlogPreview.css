@@ -1,0 +1,42 @@
+.blog-preview {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+  transition: transform 0.2s ease-in-out;
+}
+
+.blog-preview:hover {
+  transform: translateY(-2px);
+}
+
+.blog-title {
+  margin: 0 0 1rem 0;
+  font-size: 1.5rem;
+}
+
+.blog-title a {
+  color: #333;
+  text-decoration: none;
+  transition: color 0.2s ease-in-out;
+}
+
+.blog-title a:hover {
+  color: #2196f3;
+}
+
+.blog-meta {
+  display: flex;
+  gap: 1rem;
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.blog-author {
+  font-weight: 500;
+}
+
+.blog-date {
+  color: #888;
+} 

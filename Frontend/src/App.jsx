@@ -22,6 +22,10 @@ import AdminPanel from "./Admin/AdminPanel.jsx";
 import DietPlanManagement from "./Admin/DietPlanManagement.jsx";
 import WorkoutManagement from "./Admin/WorkoutManagement.jsx";
 import AdminProtectedRoute from "./components/AdminProtectedRoute";
+import BlogManagement from "./Admin/BlogManagement.jsx";
+import BlogView from "./pages/BlogView.jsx";
+import BlogList from "./pages/BlogList.jsx";
+import './styles/global.css';
 
 const FooterHandler = () => {
   const location = useLocation();
@@ -56,6 +60,7 @@ const NavbarHandler = () => {
     )
   );
 };
+
 function App() {
   // Fix: Use import.meta.env instead of import.meta.env.REACT_APP_*
   // Vite uses import.meta.env.VITE_* for environment variables
@@ -65,99 +70,113 @@ function App() {
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <AuthProvider>
         <Router>
-          <NavbarHandler />
-          <Routes>
-            {/* Public routes */}
-            <Route path="/" element={<Aboutus />} />
-            <Route path="/SignupPage" element={<SignupPage />} />
-            <Route path="/LoginPage" element={<LoginPage />} />
-            <Route path="/auth/callback" element={<AuthCallbackPage />} />
+          <div className="app">
+            <NavbarHandler />
+            <main>
+              <Routes>
+                {/* Public routes */}
+                <Route path="/" element={<Aboutus />} />
+                <Route path="/SignupPage" element={<SignupPage />} />
+                <Route path="/LoginPage" element={<LoginPage />} />
+                <Route path="/auth/callback" element={<AuthCallbackPage />} />
+                <Route path="/blog" element={<BlogList />} />
+                <Route path="/blog/:id" element={<BlogView />} />
 
-            {/* Protected routes */}
-            <Route
-              path="/FitJourneyDashboard"
-              element={
-                <ProtectedRoute>
-                  <FitJourneyDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route 
-              path="/WorkoutForm" 
-              element={
-                <ProtectedRoute>
-                  <WorkoutForm />
-                </ProtectedRoute>
-              } 
-            />
-            <Route
-              path="/SetGoals"
-              element={
-                <ProtectedRoute>
-                  <SetGoals />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/Profile"
-              element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              }
-            />
-            <Route 
-              path="/progress" 
-              element={
-                <ProtectedRoute>
-                  <Progress />
-                </ProtectedRoute>
-              } 
-            />
-            {/* Admin routes should be protected with AdminProtectedRoute */}
-            <Route 
-              path="/AdminUserManagement" 
-              element={
-                <AdminProtectedRoute>
-                  <AdminUserManagement />
-                </AdminProtectedRoute>
-              }
-            />
-            <Route 
-              path="/AdminDashboard" 
-              element={
-                <AdminProtectedRoute>
-                  <AdminDashboard />
-                </AdminProtectedRoute>
-              }
-            />
-            <Route 
-              path="/AdminPanel" 
-              element={
-                <AdminProtectedRoute>
-                  <AdminPanel />
-                </AdminProtectedRoute>
-              }
-            />
-            <Route 
-              path="/DietPlanManagement" 
-              element={
-                <AdminProtectedRoute>
-                  <DietPlanManagement />
-                </AdminProtectedRoute>
-              }
-            />
-            <Route 
-              path="/WorkoutManagement" 
-              element={
-                <AdminProtectedRoute>
-                  <WorkoutManagement />
-                </AdminProtectedRoute>
-              }
-            />
-            {/* Remove catch-all route to allow normal 404 behavior */}
-          </Routes>
-          <FooterHandler/>
+                {/* Protected routes */}
+                <Route
+                  path="/FitJourneyDashboard"
+                  element={
+                    <ProtectedRoute>
+                      <FitJourneyDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/WorkoutForm"
+                  element={
+                    <ProtectedRoute>
+                      <WorkoutForm />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/SetGoals"
+                  element={
+                    <ProtectedRoute>
+                      <SetGoals />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/Profile"
+                  element={
+                    <ProtectedRoute>
+                      <Profile />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/progress"
+                  element={
+                    <ProtectedRoute>
+                      <Progress />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Admin routes */}
+                <Route
+                  path="/AdminPanel"
+                  element={
+                    <AdminProtectedRoute>
+                      <AdminPanel />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/AdminDashboard"
+                  element={
+                    <AdminProtectedRoute>
+                      <AdminDashboard />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/AdminUserManagement"
+                  element={
+                    <AdminProtectedRoute>
+                      <AdminUserManagement />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/WorkoutManagement"
+                  element={
+                    <AdminProtectedRoute>
+                      <WorkoutManagement />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/DietPlanManagement"
+                  element={
+                    <AdminProtectedRoute>
+                      <DietPlanManagement />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/BlogManagement"
+                  element={
+                    <AdminProtectedRoute>
+                      <BlogManagement />
+                    </AdminProtectedRoute>
+                  }
+                />
+              </Routes>
+            </main>
+            <FooterHandler />
+          </div>
         </Router>
       </AuthProvider>
     </GoogleOAuthProvider>

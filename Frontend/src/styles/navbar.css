@@ -2,111 +2,122 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
 .navbar {
-  background-color: #121212;
-  height: 80px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: sticky;
-  top: 0;
-  z-index: 999;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-}
-
-.navbar-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
-  max-width: 1200px;
-  padding: 0 24px;
+  padding: 1rem 2rem;
+  background-color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  height: 60px;
 }
 
-.navbar-logo {
-  color: #ffffff;
-  font-size: 1.8rem;
-  font-weight: 700;
-  text-decoration: none;
-  font-family: 'Poppins', sans-serif;
-  cursor: pointer;
-}
-
-.navbar-logo span {
-  color: #00e676;
-}
-
-.nav-menu {
+.navbar-brand {
   display: flex;
-  list-style: none;
-  text-align: center;
-  margin: 0;
-  padding: 0;
-}
-
-.nav-item {
-  margin: 0 16px;
-  height: 80px;
-  display: flex;
+  justify-content: space-between;
   align-items: center;
 }
 
-.nav-link {
-  color: #e0e0e0;
-  font-family: 'Poppins', sans-serif;
+.navbar-brand a {
+  color: #ffffff;
   text-decoration: none;
-  font-size: 1rem;
-  font-weight: 500;
-  padding: 8px 0;
-  position: relative;
-  transition: all 0.3s ease;
+  font-size: 1.5rem;
+  font-weight: bold;
+  font-family: 'Poppins', sans-serif;
 }
 
-.nav-link:hover {
+.navbar-brand a span {
   color: #00e676;
 }
 
-.nav-link::after {
-  content: "";
-  position: absolute;
-  width: 0;
-  height: 2px;
-  bottom: 0;
-  left: 0;
-  background-color: #00e676;
-  transition: width 0.3s ease;
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
 }
 
-.nav-link:hover::after {
-  width: 100%;
+.hamburger {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: #ffffff;
+  position: relative;
+  transition: all 0.3s ease-in-out;
+}
+
+.hamburger::before,
+.hamburger::after {
+  content: '';
+  position: absolute;
+  width: 24px;
+  height: 2px;
+  background: #ffffff;
+  transition: all 0.3s ease-in-out;
+}
+
+.hamburger::before {
+  transform: translateY(-8px);
+}
+
+.hamburger::after {
+  transform: translateY(8px);
+}
+
+.hamburger.open {
+  background: transparent;
+}
+
+.hamburger.open::before {
+  transform: rotate(45deg);
+}
+
+.hamburger.open::after {
+  transform: rotate(-45deg);
+}
+
+.navbar-menu {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.navbar-menu a {
+  color: #e0e0e0;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+  font-family: 'Poppins', sans-serif;
+}
+
+.navbar-menu a:hover {
+  color: #00e676;
 }
 
 .auth-buttons {
   display: flex;
+  gap: 1rem;
   align-items: center;
 }
 
-.login-button, .signup-button {
-  padding: 8px 20px;
+.login-button,
+.signup-button {
+  padding: 0.5rem 1rem;
   border-radius: 4px;
-  outline: none;
-  border: none;
-  font-size: 1rem;
-  margin-left: 16px;
-  cursor: pointer;
   text-decoration: none;
-  font-family: 'Poppins', sans-serif;
   font-weight: 500;
-  transition: all 0.3s ease;
+  transition: all 0.2s;
+  font-family: 'Poppins', sans-serif;
 }
 
 .login-button {
-  background-color: transparent;
   color: #00e676;
   border: 1px solid #00e676;
-}
-
-.login-button:hover {
-  background-color: rgba(0, 230, 118, 0.1);
 }
 
 .signup-button {
@@ -114,83 +125,107 @@
   color: #121212;
 }
 
+.login-button:hover {
+  background-color: rgba(0, 230, 118, 0.1);
+}
+
 .signup-button:hover {
   background-color: #00c853;
 }
 
-.menu-icon {
-  display: none;
+.user-greeting {
   color: #e0e0e0;
+  margin-right: 1rem;
+  font-family: 'Poppins', sans-serif;
 }
 
-@media screen and (max-width: 960px) {
-  .nav-menu {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    position: absolute;
-    top: 80px;
-    left: -100%;
-    opacity: 0;
-    transition: all 0.5s ease;
-    background: #1a1a1a;
-    box-shadow: 0 8px 10px rgba(0, 0, 0, 0.3);
-  }
+.logout-button {
+  padding: 0.5rem 1rem;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-family: 'Poppins', sans-serif;
+}
 
-  .nav-menu.active {
-    left: 0;
-    opacity: 1;
-    transition: all 0.5s ease;
-    z-index: 1;
-  }
+.logout-button:hover {
+  background-color: #c82333;
+}
 
-  .nav-item {
-    height: 60px;
-    margin: 0;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-  }
+/* Add padding to the main content to prevent navbar overlap */
+main {
+  padding-top: 80px;
+  padding-bottom: 80px; /* Add padding for fixed footer */
+  min-height: calc(100vh - 140px); /* viewport height - (navbar + footer) */
+  position: relative;
+}
 
-  .nav-link {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 2rem 0;
-  }
+/* Update footer styles */
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  background-color: #ffffff;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
-  .menu-icon {
+@media (max-width: 768px) {
+  .menu-toggle {
     display: block;
-    position: absolute;
-    right: 24px;
-    font-size: 1.8rem;
-    cursor: pointer;
+  }
+
+  .navbar-menu {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    right: 0;
+    background-color: #ffffff;
+    padding: 1rem;
+    display: none;
+    flex-direction: column;
+    gap: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    height: auto;
+    max-height: calc(100vh - 60px);
+    overflow-y: auto;
+    z-index: 1000;
+  }
+
+  .navbar-menu.active {
+    display: flex;
   }
 
   .auth-buttons {
-    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #ffffff;
+    padding: 1rem;
+    display: none;
     flex-direction: column;
-    position: absolute;
-    top: 260px;
-    left: -100%;
-    opacity: 0;
-    transition: all 0.5s ease;
-    background: #1a1a1a;
-    width: 100%;
-    padding-bottom: 20px;
+    gap: 1rem;
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
   }
 
   .auth-buttons.active {
-    left: 0;
-    opacity: 1;
-    transition: all 0.5s ease;
-    z-index: 1;
+    display: flex;
   }
 
-  .login-button, .signup-button {
-    width: 80%;
-    margin: 10px auto;
+  .navbar-menu a,
+  .auth-buttons a,
+  .auth-buttons button {
+    width: 100%;
+    padding: 0.75rem 0;
     text-align: center;
   }
 }
