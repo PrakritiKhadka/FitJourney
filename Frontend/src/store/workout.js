@@ -33,22 +33,20 @@ const useWorkoutStore = create((set, get) => ({
       }
     }),
   
-  submitWorkout: async () => {
-    const { formData } = get();
+  submitWorkout: async (workoutData) => {
     set({ isLoading: true, error: null });
     
     try {
       // Ensure duration is properly formatted
       const preparedData = {
-        ...formData,
-        duration: parseInt(formData.duration, 10) || 0
+        ...workoutData,
+        duration: parseInt(workoutData.duration, 10) || 0
       };
       
       const response = await fetch('/api/workouts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // Add authorization header if you're using tokens
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
         body: JSON.stringify(preparedData),

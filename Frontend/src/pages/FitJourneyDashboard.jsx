@@ -1,43 +1,64 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import '../styles/FitJourneyDashboard.css';
-import useWorkoutStore from '../store/workout'; // Import your workout store
 
 const FitJourneyDashboard = () => {
   const navigate = useNavigate();
   const [workouts, setWorkouts] = useState([]);
+  const [popularWorkouts, setPopularWorkouts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [recentError, setRecentError] = useState(null);
+  const [popularError, setPopularError] = useState(null);
+  const [recommendedWorkouts, setRecommendedWorkouts] = useState([]);
+  const [showAllRecommended, setShowAllRecommended] = useState(false);
   
-  // Fetch workouts on component mount
+  // Fetch workouts and popular workouts on component mount
   useEffect(() => {
-    const fetchWorkouts = async () => {
+    const fetchData = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch('/api/workouts', {
-          method: 'GET',
+        // Fetch user's workouts
+        const workoutsResponse = await fetch('/api/workouts', {
           headers: {
-            'Content-Type': 'application/json',
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
         });
         
-        const data = await response.json();
+        const workoutsData = await workoutsResponse.json();
         
-        if (!response.ok) {
-          throw new Error(data.error || 'Failed to fetch workouts');
+        if (!workoutsResponse.ok) {
+          setRecentError(workoutsData.error || 'Failed to fetch workouts');
+        } else {
+          setWorkouts(workoutsData.data);
+          setRecentError(null);
         }
+
+        // Fetch popular workouts (admin workouts sorted by usage)
+        const popularResponse = await fetch('/api/workouts/stats', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
         
-        setWorkouts(data.data);
+        const popularData = await popularResponse.json();
+        
+        if (!popularResponse.ok) {
+          setPopularError(popularData.error || 'Failed to fetch popular workouts');
+        } else {
+          setPopularWorkouts(popularData.data);
+          setPopularError(null);
+          // Recommended: admin-created and popular
+          setRecommendedWorkouts(popularData.data.filter(w => w.totalUsage > 0));
+        }
       } catch (err) {
-        console.error('Error fetching workouts:', err);
-        setError(err.message);
+        setRecentError('Failed to fetch workouts');
+        setPopularError('Failed to fetch popular workouts');
       } finally {
         setIsLoading(false);
       }
     };
     
-    fetchWorkouts();
+    fetchData();
   }, []);
   
   // Format date to display nicely
@@ -54,6 +75,99 @@ const FitJourneyDashboard = () => {
     } else {
       return `${date.toLocaleDateString([], { month: 'short', day: 'numeric' })}, ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
     }
+  };
+
+  const handleUseWorkout = async (workoutId) => {
+    try {
+      const response = await fetch(`/api/workouts/admin/${workoutId}/use`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to use workout');
+      }
+
+      // Refresh workouts after using a popular workout
+      const workoutsResponse = await fetch('/api/workouts', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      const workoutsData = await workoutsResponse.json();
+      
+      if (!workoutsResponse.ok) {
+        throw new Error(workoutsData.error || 'Failed to fetch workouts');
+      }
+      
+      setWorkouts(workoutsData.data);
+    } catch (err) {
+      console.error('Error using workout:', err);
+      alert('Failed to use workout: ' + err.message);
+    }
+  };
+
+  const handleCompleteWorkout = async (workoutId) => {
+    try {
+      const response = await fetch(`/api/workouts/${workoutId}/complete`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to complete workout');
+      }
+
+      // Refresh workouts after completing
+      const workoutsResponse = await fetch('/api/workouts', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      const workoutsData = await workoutsResponse.json();
+      
+      if (!workoutsResponse.ok) {
+        throw new Error(workoutsData.error || 'Failed to fetch workouts');
+      }
+      
+      setWorkouts(workoutsData.data);
+    } catch (err) {
+      console.error('Error completing workout:', err);
+      alert('Failed to complete workout: ' + err.message);
+    }
+  };
+
+  const getStatusBadge = (status) => {
+    const statusStyles = {
+      pending: { bg: '#fef3c7', color: '#92400e' },
+      completed: { bg: '#dcfce7', color: '#166534' },
+      skipped: { bg: '#fee2e2', color: '#991b1b' }
+    };
+    
+    const style = statusStyles[status] || statusStyles.pending;
+    
+    return (
+      <span style={{
+        backgroundColor: style.bg,
+        color: style.color,
+        padding: '4px 8px',
+        borderRadius: '4px',
+        fontSize: '0.875rem',
+        fontWeight: '500'
+      }}>
+        {status.charAt(0).toUpperCase() + status.slice(1)}
+      </span>
+    );
   };
   
   return (
@@ -117,8 +231,8 @@ const FitJourneyDashboard = () => {
           
           {isLoading ? (
             <div className="workout-loading">Loading recent workouts...</div>
-          ) : error ? (
-            <div className="workout-error">Error loading workouts: {error}</div>
+          ) : recentError ? (
+            <div className="workout-error">Error loading workouts: {recentError}</div>
           ) : (
             <div className="workout-grid">
               {workouts.length > 0 ? (
@@ -131,6 +245,17 @@ const FitJourneyDashboard = () => {
                       <span>{workout.duration} min</span>
                       {workout.notes && <span>{workout.notes.substring(0, 15)}{workout.notes.length > 15 ? '...' : ''}</span>}
                     </div>
+                    <div className="workout-actions">
+                      {getStatusBadge(workout.completionStatus)}
+                      {workout.completionStatus === 'pending' && (
+                        <button 
+                          className="complete-btn"
+                          onClick={() => handleCompleteWorkout(workout._id)}
+                        >
+                          Mark Complete
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))
               ) : (
@@ -140,6 +265,75 @@ const FitJourneyDashboard = () => {
               )}
             </div>
           )}
+        </div>
+        
+        <div className="dashboard-card popular-workouts-card">
+          <h3>
+            <span className="card-icon icon-blue">⭐</span>
+            Popular Workouts
+          </h3>
+          
+          {isLoading ? (
+            <div className="workout-loading">Loading popular workouts...</div>
+          ) : popularError ? (
+            <div className="workout-error">Error loading popular workouts: {popularError}</div>
+          ) : (
+            <div className="popular-workouts-grid">
+              {popularWorkouts.slice(0, 3).map((workout) => (
+                <div key={workout._id} className="popular-workout-item">
+                  <div className="workout-type">{workout._id}</div>
+                  <div className="workout-stats">
+                    <span>Total Usage: {workout.totalUsage}</span>
+                    <span>Last Used: {workout.lastUsed ? formatDate(workout.lastUsed) : 'Never'}</span>
+                  </div>
+                  <button 
+                    className="use-workout-btn"
+                    onClick={() => handleUseWorkout(workout._id)}
+                  >
+                    Use This Workout
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        
+        <div className="dashboard-card recommended-workouts-card">
+          <h3>
+            <span className="card-icon icon-blue">💡</span>
+            Recommended Workouts
+          </h3>
+          <div className="popular-workouts-grid">
+            {recommendedWorkouts.length > 0 ? (
+              <>
+                {recommendedWorkouts.slice(0, showAllRecommended ? undefined : 3).map((workout) => (
+                  <div key={workout._id} className="popular-workout-item">
+                    <div className="workout-type">{workout._id}</div>
+                    <div className="workout-stats">
+                      <span>Total Usage: {workout.totalUsage}</span>
+                      <span>Last Used: {workout.lastUsed ? formatDate(workout.lastUsed) : 'Never'}</span>
+                    </div>
+                    <button 
+                      className="use-workout-btn"
+                      onClick={() => handleUseWorkout(workout._id)}
+                    >
+                      Use This Workout
+                    </button>
+                  </div>
+                ))}
+                {!showAllRecommended && recommendedWorkouts.length > 3 && (
+                  <button 
+                    className="see-more-btn"
+                    onClick={() => navigate('/recommended-workouts')}
+                  >
+                    See More Workouts
+                  </button>
+                )}
+              </>
+            ) : (
+              <div className="workout-error">No recommended workouts available.</div>
+            )}
+          </div>
         </div>
       </div>
     </div>
