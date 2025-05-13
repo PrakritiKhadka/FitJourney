@@ -3,6 +3,7 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
+import { Plus } from 'lucide-react';
 import axios from 'axios';
 import '../styles/BlogManagement.css';
 
@@ -15,7 +16,7 @@ const BlogManagement = () => {
     imageUrl: '',
     isPublished: false,
   });
-  const [isEditing, setIsEditing] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -57,7 +58,7 @@ const BlogManagement = () => {
     try {
       const content = editor ? editor.getHTML() : '';
 
-      if (isEditing && selectedBlog) {
+      if (selectedBlog) {
         await axios.put(`http://localhost:5001/api/blogs/${selectedBlog._id}`, {
           ...formData,
           content,
@@ -71,7 +72,7 @@ const BlogManagement = () => {
         setSuccess('Blog created successfully');
       }
       
-      // Reset form
+      // Reset form and close modal
       setFormData({
         title: '',
         author: '',
@@ -79,8 +80,8 @@ const BlogManagement = () => {
         isPublished: false,
       });
       editor?.commands.setContent('');
-      setIsEditing(false);
       setSelectedBlog(null);
+      setIsModalOpen(false);
       fetchBlogs();
     } catch (err) {
       console.error('Error saving blog:', err);
@@ -98,7 +99,7 @@ const BlogManagement = () => {
     });
     
     editor?.commands.setContent(blog.content);
-    setIsEditing(true);
+    setIsModalOpen(true);
   };
 
   const handleDelete = async (blogId) => {
@@ -143,8 +144,20 @@ const BlogManagement = () => {
       isPublished: false,
     });
     editor?.commands.setContent('');
-    setIsEditing(false);
     setSelectedBlog(null);
+    setIsModalOpen(false);
+  };
+
+  const openNewBlogModal = () => {
+    setSelectedBlog(null);
+    setFormData({
+      title: '',
+      author: '',
+      imageUrl: '',
+      isPublished: false,
+    });
+    editor?.commands.setContent('');
+    setIsModalOpen(true);
   };
 
   if (!editor) {
@@ -158,136 +171,15 @@ const BlogManagement = () => {
       {error && <div className="error-message">{error}</div>}
       {success && <div className="success-message">{success}</div>}
 
-      <div className="blog-form">
-        <h3>{selectedBlog ? "Edit Blog" : "Create New Blog"}</h3>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Title:</label>
-            <input
-              type="text"
-              name="title"
-              value={formData.title}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label>Content:</label>
-            <div className="editor-toolbar">
-              <button
-                type="button"
-                onClick={() => editor.chain().focus().toggleBold().run()}
-                className={editor.isActive('bold') ? 'is-active' : ''}
-              >
-                Bold
-              </button>
-              <button
-                type="button"
-                onClick={() => editor.chain().focus().toggleItalic().run()}
-                className={editor.isActive('italic') ? 'is-active' : ''}
-              >
-                Italic
-              </button>
-              <button
-                type="button"
-                onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-                className={editor.isActive('heading', { level: 1 }) ? 'is-active' : ''}
-              >
-                H1
-              </button>
-              <button
-                type="button"
-                onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-                className={editor.isActive('heading', { level: 2 }) ? 'is-active' : ''}
-              >
-                H2
-              </button>
-              <button
-                type="button"
-                onClick={() => editor.chain().focus().toggleBulletList().run()}
-                className={editor.isActive('bulletList') ? 'is-active' : ''}
-              >
-                Bullet List
-              </button>
-              <button
-                type="button"
-                onClick={() => editor.chain().focus().toggleOrderedList().run()}
-                className={editor.isActive('orderedList') ? 'is-active' : ''}
-              >
-                Numbered List
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  const url = window.prompt('Enter the URL');
-                  if (url) {
-                    editor.chain().focus().setLink({ href: url }).run();
-                  }
-                }}
-                className={editor.isActive('link') ? 'is-active' : ''}
-              >
-                Link
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  const url = window.prompt('Enter the image URL');
-                  if (url) {
-                    editor.chain().focus().setImage({ src: url }).run();
-                  }
-                }}
-              >
-                Image
-              </button>
-            </div>
-            <div className="editor-container">
-              <EditorContent editor={editor} />
-            </div>
-          </div>
-          <div className="form-group">
-            <label>Author:</label>
-            <input
-              type="text"
-              name="author"
-              value={formData.author}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label>Image URL:</label>
-            <input
-              type="url"
-              name="imageUrl"
-              value={formData.imageUrl}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label>
-              <input
-                type="checkbox"
-                name="isPublished"
-                checked={formData.isPublished}
-                onChange={handleInputChange}
-              />
-              Publish
-            </label>
-          </div>
-          <div className="form-actions">
-            <button type="submit">{selectedBlog ? "Update" : "Create"}</button>
-            {selectedBlog && (
-              <button type="button" onClick={handleCancel}>
-                Cancel
-              </button>
-            )}
-          </div>
-        </form>
-      </div>
-
+      {/* Blog List Section */}
       <div className="blogs-list">
-        <h2>All Blogs</h2>
+        <div className="blogs-header">
+          <h2>All Blogs</h2>
+          <button className="add-blog-btn" onClick={openNewBlogModal}>
+            <Plus size={20} />
+            Add New Blog
+          </button>
+        </div>
         {blogs.map((blog) => (
           <div key={blog._id} className="blog-item">
             <h3>{blog.title}</h3>
@@ -315,6 +207,142 @@ const BlogManagement = () => {
           </div>
         ))}
       </div>
+
+      {/* Blog Form Modal */}
+      {isModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3>{selectedBlog ? "Edit Blog" : "Create New Blog"}</h3>
+              <button className="modal-close" onClick={handleCancel}>×</button>
+            </div>
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label>Title:</label>
+                <input
+                  type="text"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Content:</label>
+                <div className="editor-toolbar">
+                  <button
+                    type="button"
+                    onClick={() => editor.chain().focus().toggleBold().run()}
+                    className={editor.isActive('bold') ? 'is-active' : ''}
+                  >
+                    Bold
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => editor.chain().focus().toggleItalic().run()}
+                    className={editor.isActive('italic') ? 'is-active' : ''}
+                  >
+                    Italic
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+                    className={editor.isActive('heading', { level: 1 }) ? 'is-active' : ''}
+                  >
+                    H1
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+                    className={editor.isActive('heading', { level: 2 }) ? 'is-active' : ''}
+                  >
+                    H2
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => editor.chain().focus().toggleBulletList().run()}
+                    className={editor.isActive('bulletList') ? 'is-active' : ''}
+                  >
+                    Bullet List
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => editor.chain().focus().toggleOrderedList().run()}
+                    className={editor.isActive('orderedList') ? 'is-active' : ''}
+                  >
+                    Numbered List
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const url = window.prompt('Enter the URL');
+                      if (url) {
+                        editor.chain().focus().setLink({ href: url }).run();
+                      }
+                    }}
+                    className={editor.isActive('link') ? 'is-active' : ''}
+                  >
+                    Link
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const url = window.prompt('Enter the image URL');
+                      if (url) {
+                        editor.chain().focus().setImage({ src: url }).run();
+                      }
+                    }}
+                  >
+                    Image
+                  </button>
+                </div>
+                <div className="editor-container">
+                  <EditorContent editor={editor} />
+                </div>
+              </div>
+              <div className="form-group">
+                <label>Author:</label>
+                <input
+                  type="text"
+                  name="author"
+                  value={formData.author}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Image URL:</label>
+                <input
+                  type="url"
+                  name="imageUrl"
+                  value={formData.imageUrl}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>
+                  <input
+                    type="checkbox"
+                    name="isPublished"
+                    checked={formData.isPublished}
+                    onChange={handleInputChange}
+                  />
+                  Publish
+                </label>
+              </div>
+              <div className="form-actions">
+                <button type="button" onClick={handleCancel} className="cancel-button">
+                  Cancel
+                </button>
+                <button type="submit" className="submit-button">
+                  {selectedBlog ? "Update" : "Create"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
