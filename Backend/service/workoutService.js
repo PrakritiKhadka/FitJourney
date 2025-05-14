@@ -322,3 +322,53 @@ export const sendWorkoutReminders = async () => {
   }
 };
 
+// Get summary stats for admin/user workouts
+export const getWorkoutSummaryStats = async (req, res) => {
+  try {
+    const workouts = await Workout.find();
+    const totalWorkouts = workouts.length;
+    const completedWorkouts = workouts.filter(w => w.completionStatus === 'completed');
+    const totalCompleted = completedWorkouts.length;
+    const totalDurationCompleted = completedWorkouts.reduce((sum, w) => sum + (w.duration || 0), 0);
+    const totalUsage = totalCompleted;
+
+    const userCreatedWorkouts = workouts.filter(w => w.isAdminWorkout == false);
+    const totalUserCreatedWorkouts = userCreatedWorkouts.length;
+    const userCompletedWorkouts = userCreatedWorkouts.filter(w => w.completionStatus === 'completed');
+    const totalUserCompletedWorkouts = userCompletedWorkouts.length;
+    const totalUserDurationCompleted = userCompletedWorkouts.reduce((sum, w) => sum + (w.duration || 0), 0);
+
+    const adminCreatedWorkouts = workouts.filter(w => w.isAdminWorkout == true);
+    const totalAdminCreatedWorkouts = adminCreatedWorkouts.length;
+    const adminCompletedWorkouts = adminCreatedWorkouts.filter(w => w.completionStatus === 'completed');
+    const totalAdminCompletedWorkouts = adminCompletedWorkouts.length;
+    const totalAdminDurationCompleted = adminCompletedWorkouts.reduce((sum, w) => sum + (w.duration || 0), 0);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalWorkouts,
+        totalCompleted,
+        totalDurationCompleted,
+        totalUsage,
+        userWorkouts: {
+          totalWorkouts: totalUserCreatedWorkouts,
+          totalCompleted: totalUserCompletedWorkouts,
+          totalDurationCompleted: totalUserDurationCompleted
+        },
+        adminWorkouts: {
+          totalWorkouts: totalAdminCreatedWorkouts,
+          totalCompleted: totalAdminCompletedWorkouts,
+          totalDurationCompleted: totalAdminDurationCompleted
+        }
+      }
+    });
+  } catch (err) {
+    console.error('Error fetching workout summary stats:', err);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch workout summary stats: ' + err.message
+    });
+  }
+};
+

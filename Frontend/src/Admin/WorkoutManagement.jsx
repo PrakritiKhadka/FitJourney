@@ -3,16 +3,27 @@ import { Dumbbell, ArrowLeft, BarChart2, Plus } from 'lucide-react';
 import './WorkoutManagement.css';
 import WorkoutForm from '../pages/WorkoutForm';
 import useUserStore from "../store/user";
+import axios from 'axios';
 
 
 // Workout Management Component
 function WorkoutManagement() {
   const [workouts, setWorkouts] = useState([]);
-  const [stats, setStats] = useState([]);
-  const [completionStats, setCompletionStats] = useState({
+  const [summaryStats, setSummaryStats] = useState({
+    totalWorkouts: 0,
     totalCompleted: 0,
-    totalSkipped: 0,
-    completionRate: 0
+    totalDurationCompleted: 0,
+    totalUsage: 0,
+    userWorkouts: {
+      totalWorkouts: 0,
+      totalCompleted: 0,
+      totalDurationCompleted: 0
+    },
+    adminWorkouts: {
+      totalWorkouts: 0,
+      totalCompleted: 0,
+      totalDurationCompleted: 0
+    }
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -25,16 +36,20 @@ function WorkoutManagement() {
   // Separate admin and user workouts
   const adminWorkouts = workouts.filter(w => w.isAdminWorkout);
   const userWorkouts = workouts.filter(w => !w.isAdminWorkout);
-
-  const { isAuthenticated, logout, user, err, clearError, checkAuth } = useUserStore();
+  const { user } = useUserStore();
 
   useEffect(() => {
     fetchWorkouts();
-    fetchStats();
+    fetchSummaryStats(activeTab);
   }, []);
+
+  useEffect(() => {
+    fetchSummaryStats(activeTab);
+  }, [activeTab, workouts]);
 
   const fetchWorkouts = async () => {
     try {
+      setIsLoading(true);
       const response = await fetch('/api/workouts', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -54,34 +69,30 @@ function WorkoutManagement() {
     }
   };
 
-  const fetchStats = async () => {
+  const fetchSummaryStats = async () => {
     try {
-      const response = await fetch('/api/workouts/stats', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+      const response = await axios.get(`/api/workouts/stats`);
+      if (response.data && response.data.success) {
+        setSummaryStats(response.data.data);
+      }
+    } catch {
+      // fallback: set to zero
+      setSummaryStats({
+        totalWorkouts: 0,
+        totalCompleted: 0,
+        totalDurationCompleted: 0,
+        totalUsage: 0,
+        userWorkouts: {
+          totalWorkouts: 0,
+          totalCompleted: 0,
+          totalDurationCompleted: 0
+        },
+        adminWorkouts: {
+          totalWorkouts: 0,
+          totalCompleted: 0,
+          totalDurationCompleted: 0
         }
       });
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch stats');
-      }
-      
-      setStats(data.data);
-
-      // Calculate completion stats
-      const completedCount = workouts.filter(w => w.completionStatus === 'completed').length;
-      const skippedCount = workouts.filter(w => w.completionStatus === 'skipped').length;
-      const totalWorkouts = workouts.length;
-      const completionRate = totalWorkouts > 0 ? (completedCount / totalWorkouts) * 100 : 0;
-
-      setCompletionStats({
-        totalCompleted: completedCount,
-        totalSkipped: skippedCount,
-        completionRate: completionRate.toFixed(1)
-      });
-    } catch (err) {
-      console.error('Error fetching stats:', err);
     }
   };
 
@@ -184,48 +195,30 @@ function WorkoutManagement() {
         </button>
       </div>
       <div className="workout-content">
-        <div className="stats-section">
-          <h2>
-            <BarChart2 size={24} />
-            Workout Statistics
-          </h2>
-          <div className="stats-grid">
-            <div className="stat-card">
-              <h3>Completion Stats</h3>
-              <div className="stat-details">
-                <div className="stat-item">
-                  <span className="stat-label">Total Completed:</span>
-                  <span className="stat-value">{completionStats.totalCompleted}</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label">Total Skipped:</span>
-                  <span className="stat-value">{completionStats.totalSkipped}</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label">Completion Rate:</span>
-                  <span className="stat-value">{completionStats.completionRate}%</span>
-                </div>
-              </div>
+        <div className="stats-section stats-cards-row">
+          <div className="stat-card small">
+            <div className="stat-label">Total Workouts</div>
+            <div className="stat-value">
+              {activeTab === 'admin' 
+                ? summaryStats.adminWorkouts.totalWorkouts 
+                : summaryStats.userWorkouts.totalWorkouts}
             </div>
-            {stats.map((stat, index) => (
-              <div key={index} className="stat-card">
-                <h3>{stat._id}</h3>
-                <div className="stat-details">
-                  <div className="stat-item">
-                    <span className="stat-label">Total Usage:</span>
-                    <span className="stat-value">{stat.totalUsage ?? 0}</span>
-                  </div>
-                  <div className="stat-item">
-                    <span className="stat-label">Last Used:</span>
-                    <span className="stat-value">{stat.lastUsed ? formatDate(stat.lastUsed) : 'Never'}</span>
-                  </div>
-                  <div className="stat-item">
-                    <span className="stat-label">Total Workouts:</span>
-                    <span className="stat-value">{stat.count ?? 0}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
+          </div>
+          <div className="stat-card small">
+            <div className="stat-label">Total Workouts Completed</div>
+            <div className="stat-value">
+              {activeTab === 'admin' 
+                ? summaryStats.adminWorkouts.totalCompleted 
+                : summaryStats.userWorkouts.totalCompleted}
+            </div>
+          </div>
+          <div className="stat-card small">
+            <div className="stat-label">Total Duration Completed</div>
+            <div className="stat-value">
+              {activeTab === 'admin' 
+                ? summaryStats.adminWorkouts.totalDurationCompleted 
+                : summaryStats.userWorkouts.totalDurationCompleted} min
+            </div>
           </div>
         </div>
 
