@@ -1,7 +1,7 @@
 // routes/workout.js
 import express from 'express';
 import { 
-  logWorkout, 
+  createWorkout, 
   getWorkouts, 
   updateWorkout, 
   deleteWorkout,
@@ -16,7 +16,7 @@ const router = express.Router();
 router.use(verifyLogin);
 
 // POST: Save new workout
-router.post('/', logWorkout);
+router.post('/', createWorkout);
 
 // GET: Get all workouts (filtered based on user role)
 router.get('/', getWorkouts);

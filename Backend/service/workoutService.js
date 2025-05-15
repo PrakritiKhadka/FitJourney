@@ -12,7 +12,7 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-export const logWorkout = async (req, res) => {
+export const createWorkout = async (req, res) => {
   try {
     const { 
       name,
