@@ -275,8 +275,8 @@ function DietPlanDetail() {
             {dietPlan.dailyDetails[selectedDay]?.meals?.map((meal, index) => (
               <div key={index} className="meal-card">
                 <div className="meal-header">
-                  <h3>{meal.name}</h3>
-                  <span className="meal-time">{meal.time}</span>
+                <span className="meal-name">{meal.name}</span>
+                <span className="meal-time">{meal.time}</span>
                 </div>
                 <p className="meal-description">{meal.description}</p>
                 <div className="meal-footer">

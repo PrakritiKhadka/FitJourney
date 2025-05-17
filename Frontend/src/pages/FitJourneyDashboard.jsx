@@ -1,20 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import '../styles/FitJourneyDashboard.css';
-import useUserStore from '../store/user';
-import { Eye, Plus, Calendar, Clock, Repeat, Bell } from 'lucide-react';
-import WorkoutForm from './WorkoutForm';
-import { showErrorToast, showSuccessToast } from '../toastutil';
+import "../styles/FitJourneyDashboard.css";
+import useUserStore from "../store/user";
+import { Eye, Plus, Calendar, Clock, Repeat, Bell, Trash2 } from "lucide-react";
+import WorkoutForm from "./WorkoutForm";
+import { showErrorToast, showSuccessToast } from "../toastutil";
 
 const FitJourneyDashboard = () => {
   const navigate = useNavigate();
   const { user, updateProfile } = useUserStore();
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState("dashboard");
   const [stats, setStats] = useState({
     workoutsThisMonth: 0,
     goalCompletion: 0,
     caloriesBurned: 0,
-    activeDays: 0
+    activeDays: 0,
   });
   const [subscribedDietPlan, setSubscribedDietPlan] = useState(null);
   const [recommendedBlogs, setRecommendedBlogs] = useState([]);
@@ -23,33 +23,36 @@ const FitJourneyDashboard = () => {
   const [error, setError] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    age: '',
-    gender: '',
-    goals: []
+    name: "",
+    age: "",
+    gender: "",
+    goals: [],
   });
   const [showGoalForm, setShowGoalForm] = useState(false);
   const [goalData, setGoalData] = useState({
-    calories: 0
+    calories: 0,
   });
   const [subscribedWorkouts, setSubscribedWorkouts] = useState([]);
   const [adminWorkouts, setAdminWorkouts] = useState([]);
   const [selectedWorkout, setSelectedWorkout] = useState(null);
   const [showWorkoutModal, setShowWorkoutModal] = useState(false);
   const [showCreateWorkoutModal, setShowCreateWorkoutModal] = useState(false);
-  const [activeDietTab, setActiveDietTab] = useState('subscribed');
+  const [activeDietTab, setActiveDietTab] = useState("subscribed");
   const [showDietPlanModal, setShowDietPlanModal] = useState(false);
   const [selectedDietPlan, setSelectedDietPlan] = useState(null);
   const [showSubscribeConfirm, setShowSubscribeConfirm] = useState(false);
   const [dietPlanToSubscribe, setDietPlanToSubscribe] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [workoutToDelete, setWorkoutToDelete] = useState(null);
+  const [selectedDay, setSelectedDay] = useState("monday");
 
   useEffect(() => {
     if (user) {
       setFormData({
-        name: user.name || '',
-        age: user.age || '',
-        gender: user.gender || '',
-        goals: user.goals || []
+        name: user.name || "",
+        age: user.age || "",
+        gender: user.gender || "",
+        goals: user.goals || [],
       });
     }
   }, [user]);
@@ -64,70 +67,69 @@ const FitJourneyDashboard = () => {
 
   const fetchWorkouts = async () => {
     try {
-      const adminWorkouts = await fetch('/api/workouts/admin', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-        
+      const adminWorkouts = await fetch("/api/workouts/admin", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
       const adminData = await adminWorkouts.json();
-      const subscribedWorkouts = await fetch('/api/workouts/subscribed', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-        
+      const subscribedWorkouts = await fetch("/api/workouts/subscribed", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
       const subscribedData = await subscribedWorkouts.json();
       setSubscribedWorkouts(subscribedData);
       setAdminWorkouts(adminData);
-      } catch (err) {
-      setError(err.message || 'Failed to fetch workouts');
+    } catch (err) {
+      setError(err.message || "Failed to fetch workouts");
     }
   };
 
   const handleSubscribeWorkout = async (workoutId) => {
     try {
       const response = await fetch(`/api/workouts/${workoutId}/subscribe`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       });
-  
+
       const result = await response.json(); // ✅ parse the response body
-  
+
       if (!response.ok) {
         // Show backend error message if available
-        showErrorToast(result.error || 'Failed to subscribe to workout');
+        showErrorToast(result.error || "Failed to subscribe to workout");
         return;
       }
-  
-      showSuccessToast('Subscribed to workout successfully!');
+
+      showSuccessToast("Subscribed to workout successfully!");
       fetchWorkouts(); // ✅ Refresh the UI
     } catch (err) {
-      setError(err.message || 'Failed to subscribe to workout');
-      showErrorToast('Network error while subscribing to workout');
+      setError(err.message || "Failed to subscribe to workout");
+      showErrorToast("Network error while subscribing to workout");
     }
   };
-  
 
   const fetchUserStats = async () => {
     setIsLoading(true);
     try {
       // Fetch user stats
-      const statsResponse = await fetch('/api/workouts/stats', {
+      const statsResponse = await fetch("/api/workouts/stats", {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       });
       const statsData = await statsResponse.json();
       if (statsResponse.ok) {
         setStats(statsData);
       }
     } catch (err) {
-      showErrorToast('Failed to fetch dashboard data');
-      console.error('Error fetching dashboard data:', err);
+      showErrorToast("Failed to fetch dashboard data");
+      console.error("Error fetching dashboard data:", err);
     } finally {
       setIsLoading(false);
     }
@@ -137,18 +139,18 @@ const FitJourneyDashboard = () => {
     setIsLoading(true);
     try {
       // Fetch subscribed diet plan
-      const dietPlanResponse = await fetch('/api/diet-plans', {
+      const dietPlanResponse = await fetch("/api/diet-plans", {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       });
       const dietPlanData = await dietPlanResponse.json();
       if (dietPlanResponse.ok) {
         setSubscribedDietPlan(dietPlanData);
       }
     } catch (err) {
-      showErrorToast('Failed to fetch diet plan');
-      console.error('Error fetching diet plan:', err);
+      showErrorToast("Failed to fetch diet plan");
+      console.error("Error fetching diet plan:", err);
     } finally {
       setIsLoading(false);
     }
@@ -158,10 +160,10 @@ const FitJourneyDashboard = () => {
     setIsLoading(true);
     try {
       // Fetch recommended blogs
-      const blogsResponse = await fetch('/api/blogs/published', {
+      const blogsResponse = await fetch("/api/blogs/published", {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       });
       const blogsData = await blogsResponse.json();
       if (blogsResponse.ok) {
@@ -169,8 +171,8 @@ const FitJourneyDashboard = () => {
         setRecommendedBlogs(blogsData.slice(0, 3));
       }
     } catch (err) {
-      showErrorToast('Failed to fetch recommended blogs');
-      console.error('Error fetching recommended blogs:', err);
+      showErrorToast("Failed to fetch recommended blogs");
+      console.error("Error fetching recommended blogs:", err);
     } finally {
       setIsLoading(false);
     }
@@ -178,20 +180,20 @@ const FitJourneyDashboard = () => {
 
   const fetchRecommendedDietPlans = async () => {
     try {
-      const response = await fetch('/api/diet-plans', {
+      const response = await fetch("/api/diet-plans", {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch recommended diet plans');
+        throw new Error("Failed to fetch recommended diet plans");
       }
 
       const data = await response.json();
       setRecommendedDietPlans(data);
     } catch (err) {
-      showErrorToast('Failed to fetch recommended diet plans');
+      showErrorToast("Failed to fetch recommended diet plans");
     }
   };
 
@@ -201,7 +203,7 @@ const FitJourneyDashboard = () => {
       await updateProfile(formData);
       setIsEditing(false);
     } catch (err) {
-      setError(err.message || 'Failed to update profile');
+      setError(err.message || "Failed to update profile");
     }
   };
 
@@ -210,7 +212,7 @@ const FitJourneyDashboard = () => {
     try {
       // Implement goal submission logic
     } catch (err) {
-      showErrorToast('Failed to set goal');
+      showErrorToast("Failed to set goal");
     }
   };
 
@@ -221,15 +223,18 @@ const FitJourneyDashboard = () => {
 
   const confirmSubscribeDietPlan = async () => {
     try {
-      const response = await fetch(`/api/diet-plans/${dietPlanToSubscribe}/subscribe`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+      const response = await fetch(
+        `/api/diet-plans/${dietPlanToSubscribe}/subscribe`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
-      });
-      
+      );
+
       if (!response.ok) {
-        throw new Error('Failed to subscribe to diet plan');
+        throw new Error("Failed to subscribe to diet plan");
       }
 
       // Refresh diet plans after subscription
@@ -237,24 +242,51 @@ const FitJourneyDashboard = () => {
       setShowSubscribeConfirm(false);
       setDietPlanToSubscribe(null);
     } catch (err) {
-      showErrorToast('Failed to subscribe to diet plan');
+      showErrorToast("Failed to subscribe to diet plan");
     }
   };
 
   const getCategoryColor = (category) => {
     const categoryMap = {
-      'Weight Loss': 'weight-loss',
-      'Muscle Gain': 'muscle-gain',
-      'Maintenance': 'maintenance',
-      'Vegetarian': 'vegetarian',
-      'Vegan': 'vegan'
+      "Weight Loss": "weight-loss",
+      "Muscle Gain": "muscle-gain",
+      Maintenance: "maintenance",
+      Vegetarian: "vegetarian",
+      Vegan: "vegan",
     };
-    return categoryMap[category] || 'maintenance';
+    return categoryMap[category] || "maintenance";
+  };
+
+  const handleDeleteWorkout = async (workoutId) => {
+    setWorkoutToDelete(workoutId);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDeleteWorkout = async () => {
+    try {
+      const response = await fetch(`/api/workouts/${workoutToDelete}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete workout");
+      }
+
+      showSuccessToast("Workout deleted successfully!");
+      fetchWorkouts();
+      setShowDeleteConfirm(false);
+      setWorkoutToDelete(null);
+    } catch (err) {
+      showErrorToast("Failed to delete workout");
+    }
   };
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'dashboard':
+      case "dashboard":
         return (
           <div className="dashboard-content">
             <div className="stats-overview">
@@ -287,15 +319,19 @@ const FitJourneyDashboard = () => {
               <div className="diet-plan-header">
                 <h2>Diet Plans</h2>
                 <div className="diet-plan-tabs">
-                  <button 
-                    className={`tab-button ${activeDietTab === 'subscribed' ? 'active' : ''}`}
-                    onClick={() => setActiveDietTab('subscribed')}
+                  <button
+                    className={`tab-button ${
+                      activeDietTab === "subscribed" ? "active" : ""
+                    }`}
+                    onClick={() => setActiveDietTab("subscribed")}
                   >
                     Your Diet Plan
                   </button>
-                  <button 
-                    className={`tab-button ${activeDietTab === 'recommended' ? 'active' : ''}`}
-                    onClick={() => setActiveDietTab('recommended')}
+                  <button
+                    className={`tab-button ${
+                      activeDietTab === "recommended" ? "active" : ""
+                    }`}
+                    onClick={() => setActiveDietTab("recommended")}
                   >
                     Recommended Plans
                   </button>
@@ -303,7 +339,7 @@ const FitJourneyDashboard = () => {
               </div>
 
               <div className="diet-plan-content">
-                {activeDietTab === 'subscribed' ? (
+                {activeDietTab === "subscribed" ? (
                   <div className="table-container">
                     <table className="diet-table">
                       <thead>
@@ -320,14 +356,18 @@ const FitJourneyDashboard = () => {
                           <tr>
                             <td>{subscribedDietPlan.name}</td>
                             <td>
-                              <span className={`category-badge ${getCategoryColor(subscribedDietPlan.category)}`}>
+                              <span
+                                className={`category-badge ${getCategoryColor(
+                                  subscribedDietPlan.category
+                                )}`}
+                              >
                                 {subscribedDietPlan.category}
                               </span>
                             </td>
                             <td>{subscribedDietPlan.dailyCalories} kcal</td>
                             <td>{subscribedDietPlan.mealsPerDay}</td>
                             <td>
-                              <button 
+                              <button
                                 className="btn-icon"
                                 onClick={() => {
                                   setSelectedDietPlan(subscribedDietPlan);
@@ -341,7 +381,9 @@ const FitJourneyDashboard = () => {
                           </tr>
                         ) : (
                           <tr>
-                            <td colSpan="5" className="empty-message">No diet plan subscribed yet</td>
+                            <td colSpan="5" className="empty-message">
+                              No diet plan subscribed yet
+                            </td>
                           </tr>
                         )}
                       </tbody>
@@ -360,11 +402,15 @@ const FitJourneyDashboard = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {recommendedDietPlans.map(plan => (
+                        {recommendedDietPlans.map((plan) => (
                           <tr key={plan._id}>
                             <td>{plan.name}</td>
                             <td>
-                              <span className={`category-badge ${getCategoryColor(plan.category)}`}>
+                              <span
+                                className={`category-badge ${getCategoryColor(
+                                  plan.category
+                                )}`}
+                              >
                                 {plan.category}
                               </span>
                             </td>
@@ -372,7 +418,7 @@ const FitJourneyDashboard = () => {
                             <td>{plan.mealsPerDay}</td>
                             <td>
                               <div className="table-actions">
-                                <button 
+                                <button
                                   className="btn-icon"
                                   onClick={() => {
                                     setSelectedDietPlan(plan);
@@ -382,9 +428,11 @@ const FitJourneyDashboard = () => {
                                 >
                                   <Eye size={16} />
                                 </button>
-                                <button 
+                                <button
                                   className="btn-icon subscribe"
-                                  onClick={() => handleSubscribeDietPlan(plan._id)}
+                                  onClick={() =>
+                                    handleSubscribeDietPlan(plan._id)
+                                  }
                                   title="Subscribe"
                                 >
                                   <Plus size={16} />
@@ -403,13 +451,17 @@ const FitJourneyDashboard = () => {
             <div className="recommended-blogs">
               <h2>Recommended Blogs</h2>
               <div className="blogs-grid">
-                {recommendedBlogs.map(blog => (
+                {recommendedBlogs.map((blog) => (
                   <div key={blog._id} className="blog-card">
-                    <img src={blog.coverImage} alt={blog.title} className="blog-image" />
+                    <img
+                      src={blog.coverImage}
+                      alt={blog.title}
+                      className="blog-image"
+                    />
                     <div className="blog-content">
                       <h3>{blog.title}</h3>
                       <p>{blog.excerpt}</p>
-                      <button 
+                      <button
                         className="btn btn-secondary"
                         onClick={() => navigate(`/blog/${blog._id}`)}
                       >
@@ -423,7 +475,7 @@ const FitJourneyDashboard = () => {
           </div>
         );
 
-      case 'profile':
+      case "profile":
         return (
           <div className="profile-content">
             <h2>Your Profile</h2>
@@ -439,12 +491,17 @@ const FitJourneyDashboard = () => {
                 </div>
                 <div className="profile-row">
                   <div className="profile-label">Age</div>
-                  <div className="profile-value">{user.age || 'Not specified'}</div>
+                  <div className="profile-value">
+                    {user.age || "Not specified"}
+                  </div>
                 </div>
                 <div className="profile-row">
                   <div className="profile-label">Gender</div>
                   <div className="profile-value">
-                    {user.gender ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1) : 'Not specified'}
+                    {user.gender
+                      ? user.gender.charAt(0).toUpperCase() +
+                        user.gender.slice(1)
+                      : "Not specified"}
                   </div>
                 </div>
                 <div className="profile-row">
@@ -457,18 +514,18 @@ const FitJourneyDashboard = () => {
                         ))}
                       </ul>
                     ) : (
-                      'No goals set'
+                      "No goals set"
                     )}
                   </div>
                 </div>
                 <div className="profile-actions">
-                  <button 
+                  <button
                     className="btn btn-primary"
                     onClick={() => setIsEditing(true)}
                   >
                     Edit Profile
                   </button>
-                  <button 
+                  <button
                     className="btn btn-secondary"
                     onClick={() => setShowGoalForm(true)}
                   >
@@ -484,7 +541,9 @@ const FitJourneyDashboard = () => {
                     type="text"
                     id="name"
                     value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -494,7 +553,9 @@ const FitJourneyDashboard = () => {
                     type="number"
                     id="age"
                     value={formData.age}
-                    onChange={(e) => setFormData({...formData, age: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, age: e.target.value })
+                    }
                     min="13"
                     max="120"
                   />
@@ -504,7 +565,9 @@ const FitJourneyDashboard = () => {
                   <select
                     id="gender"
                     value={formData.gender}
-                    onChange={(e) => setFormData({...formData, gender: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, gender: e.target.value })
+                    }
                   >
                     <option value="">Select Gender</option>
                     <option value="male">Male</option>
@@ -514,9 +577,11 @@ const FitJourneyDashboard = () => {
                   </select>
                 </div>
                 <div className="form-actions">
-                  <button type="submit" className="btn btn-primary">Save Changes</button>
-                  <button 
-                    type="button" 
+                  <button type="submit" className="btn btn-primary">
+                    Save Changes
+                  </button>
+                  <button
+                    type="button"
                     className="btn btn-secondary"
                     onClick={() => setIsEditing(false)}
                   >
@@ -532,21 +597,27 @@ const FitJourneyDashboard = () => {
                   <h3>Set Your Fitness Goals</h3>
                   <form onSubmit={handleGoalSubmit}>
                     <div className="form-group">
-                      <label htmlFor="calorieGoal">Daily Calorie Burn Goal</label>
+                      <label htmlFor="calorieGoal">
+                        Daily Calorie Burn Goal
+                      </label>
                       <input
                         type="number"
                         id="calorieGoal"
                         value={goalData.calories}
-                        onChange={(e) => setGoalData({...goalData, calories: e.target.value})}
+                        onChange={(e) =>
+                          setGoalData({ ...goalData, calories: e.target.value })
+                        }
                         min="100"
                         max="2000"
                         required
                       />
                     </div>
                     <div className="form-actions">
-                      <button type="submit" className="btn btn-primary">Save Goal</button>
-                      <button 
-                        type="button" 
+                      <button type="submit" className="btn btn-primary">
+                        Save Goal
+                      </button>
+                      <button
+                        type="button"
                         className="btn btn-secondary"
                         onClick={() => setShowGoalForm(false)}
                       >
@@ -560,12 +631,12 @@ const FitJourneyDashboard = () => {
           </div>
         );
 
-      case 'workouts':
-    return (
+      case "workouts":
+        return (
           <div className="workouts-content">
             <div className="workout-header">
               <h2>Your Workouts</h2>
-              <button 
+              <button
                 className="btn btn-primary"
                 onClick={() => setShowCreateWorkoutModal(true)}
               >
@@ -587,27 +658,38 @@ const FitJourneyDashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {subscribedWorkouts.data.map(workout => (
+                    {subscribedWorkouts.data.map((workout) => (
                       <tr key={workout._id}>
                         <td>{workout.name}</td>
                         <td>{workout.workoutType}</td>
                         <td>{workout.duration} min</td>
                         <td>
-                          <span className={`intensity-badge ${workout.intensityLevel.toLowerCase()}`}>
+                          <span
+                            className={`intensity-badge ${workout.intensityLevel.toLowerCase()}`}
+                          >
                             {workout.intensityLevel}
                           </span>
                         </td>
                         <td>
-                          <button 
-                            className="btn-icon"
-                            onClick={() => {
-                              setSelectedWorkout(workout);
-                              setShowWorkoutModal(true);
-                            }}
-                            title="View Details"
-                          >
-                            <Eye size={16} />
-                          </button>
+                          <div className="table-actions">
+                            <button
+                              className="btn-icon"
+                              onClick={() => {
+                                setSelectedWorkout(workout);
+                                setShowWorkoutModal(true);
+                              }}
+                              title="View Details"
+                            >
+                              <Eye size={16} />
+                            </button>
+                            <button
+                              className="btn-icon delete"
+                              onClick={() => handleDeleteWorkout(workout._id)}
+                              title="Delete Workout"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -630,19 +712,21 @@ const FitJourneyDashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {adminWorkouts.data.map(workout => (
+                    {adminWorkouts.data.map((workout) => (
                       <tr key={workout._id}>
                         <td>{workout.name}</td>
                         <td>{workout.workoutType}</td>
                         <td>{workout.duration} min</td>
                         <td>
-                          <span className={`intensity-badge ${workout.intensityLevel}`}>
+                          <span
+                            className={`intensity-badge ${workout.intensityLevel}`}
+                          >
                             {workout.intensityLevel}
-      </span>
+                          </span>
                         </td>
                         <td>
                           <div className="table-actions">
-                            <button 
+                            <button
                               className="btn-icon"
                               onClick={() => {
                                 setSelectedWorkout(workout);
@@ -652,9 +736,11 @@ const FitJourneyDashboard = () => {
                             >
                               <Eye size={16} />
                             </button>
-                            <button 
+                            <button
                               className="btn-icon subscribe"
-                              onClick={() => handleSubscribeWorkout(workout._id)}
+                              onClick={() =>
+                                handleSubscribeWorkout(workout._id)
+                              }
                               title="Subscribe"
                             >
                               <Plus size={16} />
@@ -670,16 +756,117 @@ const FitJourneyDashboard = () => {
           </div>
         );
 
-      case 'diet-plans':
+      case "diet-plans":
         return (
-          <div className="diet-plans-content">
-            <h2>Diet Plans</h2>
-            <button 
-              className="btn btn-primary"
-              onClick={() => navigate('/diet-plans')}
-            >
-              View All Diet Plans
-            </button>
+          <div className="workouts-content">
+            <div className="workouts-section">
+              <h3>Your DietPlan</h3>
+              <div className="workout-table-container">
+                <table className="workout-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Category</th>
+                      <th>Daily Calories</th>
+                      <th>Meals Per Day</th>
+                      <th>Blog</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {subscribedDietPlan.data.map((d) => (
+                      <tr key={d._id}>
+                        <td>{d.name}</td>
+                        <td>{d.category}</td>
+                        <td>{d.dailyCalories}</td>
+                        <td>{d.mealsPerDay}</td>
+                        <td>
+                          <button
+                            className="btn-icon"
+                            onClick={() => navigate(`/blog/${d.blogLink}`)}
+                            title="View Blog"
+                          >
+                            View Blog
+                          </button>
+                        </td>
+                        <td>
+                          <div className="table-actions">
+                            <button
+                              className="btn-icon"
+                              onClick={() => {
+                                setSelectedDietPlan(d);
+                                setShowDietPlanModal(true);
+                              }}
+                              title="View Details"
+                            >
+                              <Eye size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="workouts-section">
+              <h3>Recommended DietPlans</h3>
+              <div className="workout-table-container">
+                <table className="workout-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Category</th>
+                      <th>Daily Calories</th>
+                      <th>Meals Per Day</th>
+                      <th>Blog</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recommendedDietPlans.data.map((d) => (
+                      <tr key={d._id}>
+                        <td>{d.name}</td>
+                        <td>{d.category}</td>
+                        <td>{d.dailyCalories}</td>
+                        <td>{d.mealsPerDay}</td>
+                        <td>
+                          <button
+                            className="btn-icon"
+                            onClick={() => navigate(`/blog/${d.blogLink}`)}
+                            title="View Blog"
+                          >
+                            View Blog
+                          </button>
+                        </td>
+                        <td>
+                          <div className="table-actions">
+                            <button
+                              className="btn-icon"
+                              onClick={() => {
+                                setSelectedDietPlan(d);
+                                setShowDietPlanModal(true);
+                              }}
+                              title="View Details"
+                            >
+                              <Eye size={16} />
+                            </button>
+                            <button
+                              className="btn-icon subscribe"
+                              onClick={() => handleSubscribeDietPlan(d._id)}
+                              title="Subscribe"
+                            >
+                              <Plus size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         );
 
@@ -695,7 +882,7 @@ const FitJourneyDashboard = () => {
   if (error) {
     return <div className="error">{error}</div>;
   }
-  
+
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
@@ -703,43 +890,49 @@ const FitJourneyDashboard = () => {
       </div>
 
       <div className="dashboard-tabs">
-        <button 
-          className={`tab-button ${activeTab === 'dashboard' ? 'active' : ''}`}
-          onClick={() => setActiveTab('dashboard')}
+        <button
+          className={`tab-button ${activeTab === "dashboard" ? "active" : ""}`}
+          onClick={() => setActiveTab("dashboard")}
         >
           Dashboard
         </button>
-        <button 
-          className={`tab-button ${activeTab === 'workouts' ? 'active' : ''}`}
-          onClick={() => setActiveTab('workouts')}
+        <button
+          className={`tab-button ${activeTab === "workouts" ? "active" : ""}`}
+          onClick={() => setActiveTab("workouts")}
         >
           Workouts
         </button>
-        <button 
-          className={`tab-button ${activeTab === 'diet-plans' ? 'active' : ''}`}
-          onClick={() => setActiveTab('diet-plans')}
+        <button
+          className={`tab-button ${activeTab === "diet-plans" ? "active" : ""}`}
+          onClick={() => setActiveTab("diet-plans")}
         >
           Diet Plans
         </button>
-        <button 
-          className={`tab-button ${activeTab === 'profile' ? 'active' : ''}`}
-          onClick={() => setActiveTab('profile')}
+        <button
+          className={`tab-button ${activeTab === "profile" ? "active" : ""}`}
+          onClick={() => setActiveTab("profile")}
         >
           Profile
         </button>
       </div>
-      
-      <div className="dashboard-content-wrapper">
-        {renderTabContent()}
-      </div>
-      
+
+      <div className="dashboard-content-wrapper">{renderTabContent()}</div>
+
       {/* Workout Modal */}
       {showWorkoutModal && selectedWorkout && (
-        <div className="modal-overlay" onClick={() => setShowWorkoutModal(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <div
+          className="modal-overlay"
+          onClick={() => setShowWorkoutModal(false)}
+        >
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>{selectedWorkout.name}</h2>
-              <button className="modal-close" onClick={() => setShowWorkoutModal(false)}>×</button>
+              <button
+                className="modal-close"
+                onClick={() => setShowWorkoutModal(false)}
+              >
+                ×
+              </button>
             </div>
             <div className="modal-body">
               <div className="workout-details">
@@ -748,15 +941,21 @@ const FitJourneyDashboard = () => {
                   <div className="detail-grid">
                     <div className="detail-item">
                       <span className="detail-label">Type</span>
-                      <span className="detail-value">{selectedWorkout.workoutType}</span>
+                      <span className="detail-value">
+                        {selectedWorkout.workoutType}
+                      </span>
                     </div>
                     <div className="detail-item">
                       <span className="detail-label">Duration</span>
-                      <span className="detail-value">{selectedWorkout.duration} minutes</span>
+                      <span className="detail-value">
+                        {selectedWorkout.duration} minutes
+                      </span>
                     </div>
                     <div className="detail-item">
                       <span className="detail-label">Intensity</span>
-                      <span className={`intensity-badge ${selectedWorkout.intensityLevel.toLowerCase()}`}>
+                      <span
+                        className={`intensity-badge ${selectedWorkout.intensityLevel.toLowerCase()}`}
+                      >
                         {selectedWorkout.intensityLevel}
                       </span>
                     </div>
@@ -770,7 +969,9 @@ const FitJourneyDashboard = () => {
                       <div className="detail-item">
                         <Calendar size={16} />
                         <span className="detail-value">
-                          {new Date(selectedWorkout.scheduledDate).toLocaleDateString()}
+                          {new Date(
+                            selectedWorkout.scheduledDate
+                          ).toLocaleDateString()}
                         </span>
                       </div>
                     )}
@@ -782,34 +983,37 @@ const FitJourneyDashboard = () => {
                         </span>
                       </div>
                     )}
-                    {selectedWorkout.isRecurring && selectedWorkout.recurringDays && (
-                      <div className="detail-item recurring-days">
-                        <Repeat size={16} />
-                        <div className="day-chips">
-                          {selectedWorkout.recurringDays.map((day, index) => (
-                            <span key={index} className="day-chip">
-                              {day}
-                            </span>
-                          ))}
+                    {selectedWorkout.isRecurring &&
+                      selectedWorkout.recurringDays && (
+                        <div className="detail-item recurring-days">
+                          <Repeat size={16} />
+                          <div className="day-chips">
+                            {selectedWorkout.recurringDays.map((day, index) => (
+                              <span key={index} className="day-chip">
+                                {day}
+                              </span>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
-                    {selectedWorkout.reminderEnabled && selectedWorkout.reminderTime && (
-                      <div className="detail-item">
-                        <Bell size={16} />
-                        <span className="detail-value">
-                          Reminder: {selectedWorkout.reminder} minutes before workout
-                        </span>
-                      </div>
-                    )}
+                      )}
+                    {selectedWorkout.reminderEnabled &&
+                      selectedWorkout.reminderTime && (
+                        <div className="detail-item">
+                          <Bell size={16} />
+                          <span className="detail-value">
+                            Reminder: {selectedWorkout.reminder} minutes before
+                            workout
+                          </span>
+                        </div>
+                      )}
                   </div>
                 </div>
 
                 <div className="detail-section">
                   <h3>Description</h3>
                   <p className="workout-description">{selectedWorkout.notes}</p>
-        </div>
-        
+                </div>
+
                 {selectedWorkout.exercises && (
                   <div className="detail-section">
                     <h3>Exercises</h3>
@@ -820,7 +1024,9 @@ const FitJourneyDashboard = () => {
                           <div className="exercise-details">
                             <span>Sets: {exercise.sets}</span>
                             <span>Reps: {exercise.reps}</span>
-                            {exercise.duration && <span>Duration: {exercise.duration}s</span>}
+                            {exercise.duration && (
+                              <span>Duration: {exercise.duration}s</span>
+                            )}
                           </div>
                         </div>
                       ))}
@@ -830,21 +1036,29 @@ const FitJourneyDashboard = () => {
               </div>
             </div>
           </div>
-            </div>
+        </div>
       )}
 
       {/* Create Workout Modal */}
       {showCreateWorkoutModal && (
-        <div className="modal-overlay" onClick={() => setShowCreateWorkoutModal(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <div
+          className="modal-overlay"
+          onClick={() => setShowCreateWorkoutModal(false)}
+        >
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Create New Workout</h2>
-              <button className="modal-close" onClick={() => setShowCreateWorkoutModal(false)}>×</button>
+              <button
+                className="modal-close"
+                onClick={() => setShowCreateWorkoutModal(false)}
+              >
+                ×
+              </button>
             </div>
             <div className="modal-body">
-              <WorkoutForm 
-              initialData={selectedWorkout} 
-              isAdminMode={false}
+              <WorkoutForm
+                initialData={selectedWorkout}
+                isAdminMode={false}
                 onSuccess={() => {
                   setShowCreateWorkoutModal(false);
                   fetchWorkouts();
@@ -857,58 +1071,110 @@ const FitJourneyDashboard = () => {
 
       {/* Diet Plan Detail Modal */}
       {showDietPlanModal && selectedDietPlan && (
-        <div className="modal-overlay" onClick={() => setShowDietPlanModal(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <div
+          className="modal-overlay"
+          onClick={() => setShowDietPlanModal(false)}
+        >
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>{selectedDietPlan.name}</h2>
-              <button className="modal-close" onClick={() => setShowDietPlanModal(false)}>×</button>
+              <button
+                className="modal-close"
+                onClick={() => setShowDietPlanModal(false)}
+              >
+                ×
+              </button>
             </div>
             <div className="modal-body">
               <div className="diet-plan-details">
-                <div className="detail-section">
-                  <h3>Basic Information</h3>
-                  <div className="detail-grid">
-                    <div className="detail-item">
-                      <span className="detail-label">Category</span>
-                      <span className={`category-badge ${getCategoryColor(selectedDietPlan.category)}`}>
-                        {selectedDietPlan.category}
+                <div className="detail-header">
+                  <div className="plan-info">
+                    <div className="info-item">
+                      <span className="label">Category:</span>
+
+                      <span className="value">{selectedDietPlan.category}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="label">Daily Calories:</span>
+
+                      <span className="value">
+                        {selectedDietPlan.dailyCalories} kcal
                       </span>
                     </div>
-                    <div className="detail-item">
-                      <span className="detail-label">Daily Calories</span>
-                      <span className="detail-value">{selectedDietPlan.dailyCalories} kcal</span>
+                    <div className="info-item">
+                      <span className="label">Meals Per Day:</span>
+                      <span className="value">
+                        {selectedDietPlan.mealsPerDay}
+                      </span>
                     </div>
-                    <div className="detail-item">
-                      <span className="detail-label">Meals Per Day</span>
-                      <span className="detail-value">{selectedDietPlan.mealsPerDay}</span>
+                    <div className="info-item">
+                      <span className="label">Blog Link:</span>
+
+                      <a
+                        href={`/blog/${selectedDietPlan.blogLink}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="blog-link"
+                      >
+                        View Blog for more details
+                      </a>
                     </div>
                   </div>
                 </div>
 
-                <div className="detail-section">
-                  <h3>Description</h3>
-                  <p className="diet-plan-description">{selectedDietPlan.description}</p>
-        </div>
-        
-                {selectedDietPlan.meals && (
-                  <div className="detail-section">
-                    <h3>Meal Plan</h3>
+                <div className="daily-meals">
+                  <div className="days-selector">
+                    {[
+                      "monday",
+                      "tuesday",
+                      "wednesday",
+                      "thursday",
+                      "friday",
+                      "saturday",
+                      "sunday",
+                    ].map((day) => (
+                      <button
+                        key={day}
+                        className={`day-button ${
+                          selectedDay === day ? "active" : ""
+                        }`}
+                        onClick={() => setSelectedDay(day)}
+                      >
+                        {day.charAt(0).toUpperCase() + day.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="meals-container">
+                    <div className="meals-header">
+                      <h3>
+                        Meals for{" "}
+                        {selectedDay.charAt(0).toUpperCase() +
+                          selectedDay.slice(1)}
+                      </h3>
+                    </div>
+
                     <div className="meals-list">
-                      {selectedDietPlan.meals.map((meal, index) => (
-                        <div key={index} className="meal-item">
-                          <h4>{meal.name}</h4>
-                          <div className="meal-details">
-                            <span>Calories: {meal.calories} kcal</span>
-                            <span>Protein: {meal.protein}g</span>
-                            <span>Carbs: {meal.carbs}g</span>
-                            <span>Fats: {meal.fats}g</span>
+                      {selectedDietPlan.dailyDetails[selectedDay]?.meals?.map(
+                        (meal, index) => (
+                          <div key={index} className="meal-card">
+                            <div className="meal-header">
+                              <span className="meal-name">{meal.name}</span>
+                              <span className="meal-time">{meal.time}</span>
+                            </div>
+                            <p className="meal-description">
+                              {meal.description}
+                            </p>
+                            <span className="meal-calories">
+                              {meal.calories} kcal
+                            </span>
                           </div>
-                        </div>
-                      ))}
+                        )
+                      )}
                     </div>
                   </div>
-                )}
                 </div>
+              </div>
             </div>
           </div>
         </div>
@@ -916,29 +1182,78 @@ const FitJourneyDashboard = () => {
 
       {/* Subscribe Confirmation Modal */}
       {showSubscribeConfirm && (
-        <div className="modal-overlay" onClick={() => setShowSubscribeConfirm(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <div
+          className="modal-overlay"
+          onClick={() => setShowSubscribeConfirm(false)}
+        >
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Confirm Subscription</h2>
-              <button className="modal-close" onClick={() => setShowSubscribeConfirm(false)}>×</button>
-                    </div>
+              <button
+                className="modal-close"
+                onClick={() => setShowSubscribeConfirm(false)}
+              >
+                ×
+              </button>
+            </div>
             <div className="modal-body">
               <p className="confirmation-message">
-                If you subscribe to this diet plan, your current diet plan will be unsubscribed. Do you want to continue?
+                If you subscribe to this diet plan, your current diet plan will
+                be unsubscribed. Do you want to continue?
               </p>
               <div className="modal-actions">
-                    <button 
+                <button
                   className="btn btn-secondary"
                   onClick={() => setShowSubscribeConfirm(false)}
-                    >
+                >
                   Cancel
-                    </button>
-                  <button 
+                </button>
+                <button
                   className="btn btn-primary"
                   onClick={confirmSubscribeDietPlan}
-                  >
+                >
                   Yes, Subscribe
-                  </button>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div
+          className="modal-overlay"
+          onClick={() => setShowDeleteConfirm(false)}
+        >
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Confirm Delete</h2>
+              <button
+                className="modal-close"
+                onClick={() => setShowDeleteConfirm(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              <p className="confirmation-message">
+                Are you sure you want to delete this workout? This action cannot
+                be undone.
+              </p>
+              <div className="modal-actions">
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => setShowDeleteConfirm(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="btn btn-danger"
+                  onClick={confirmDeleteWorkout}
+                >
+                  Delete
+                </button>
               </div>
             </div>
           </div>

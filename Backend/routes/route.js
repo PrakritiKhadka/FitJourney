@@ -22,7 +22,8 @@ import {
   deleteDietPlan,
   subscribeToDietPlan,
   unsubscribeFromDietPlan,
-  getDietPlanStats
+  getDietPlanStats,
+  getSubscribedDietPlanById
 } from "../service/dietPlanService.js";
 
 const router = express.Router();
@@ -83,5 +84,6 @@ router.put('/diet-plans/:id',verifyLogin, updateDietPlan);
 router.delete('/diet-plans/:id', verifyLogin, deleteDietPlan);
 router.post('/diet-plans/:id/subscribe', verifyLogin, subscribeToDietPlan);
 router.post('/diet-plans/:id/unsubscribe', verifyLogin, unsubscribeFromDietPlan);
+router.get('/diet-plans/user/:id', verifyLogin, getSubscribedDietPlanById);
 
 export default router;

@@ -251,7 +251,7 @@ function DietPlanManagement() {
                 <th>Category</th>
                 <th>Daily Calories</th>
                 <th>Meals Per Day</th>
-                <th>Subscribers</th>
+                <th>No of times Subscribed</th>
                 <th>Blog Link</th>
                 <th className="actions-column">Actions</th>
               </tr>
