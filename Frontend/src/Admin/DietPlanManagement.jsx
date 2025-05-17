@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Search, 
   Plus, 
@@ -8,40 +8,110 @@ import {
   Trash,
   AlertCircle,
   Utensils,
-  ArrowLeft
+  ArrowLeft,
+  ExternalLink
 } from 'lucide-react';
 import './DietPlanManagement.css';
+import axios from 'axios';
 
 function DietPlanManagement() {
-  const [dietPlans, setDietPlans] = useState([
-    { id: 1, name: "Weight Loss Plan", category: "Weight Loss", calories: "1800", meals: 5, createdAt: "Apr 15, 2025" },
-    { id: 2, name: "Muscle Building", category: "Muscle Gain", calories: "3000", meals: 6, createdAt: "Apr 12, 2025" },
-    { id: 3, name: "Keto Diet", category: "Keto", calories: "2200", meals: 4, createdAt: "Mar 30, 2025" },
-    { id: 4, name: "Vegan Plan", category: "Vegan", calories: "2000", meals: 5, createdAt: "Mar 25, 2025" },
-    { id: 5, name: "Mediterranean Diet", category: "Mediterranean", calories: "2400", meals: 3, createdAt: "Mar 20, 2025" },
-    { id: 6, name: "Intermittent Fasting", category: "Weight Loss", calories: "1600", meals: 2, createdAt: "Mar 15, 2025" },
-  ]);
-  
+  const [dietPlans, setDietPlans] = useState([]);
+  const [stats, setStats] = useState({
+    totalDietPlans: 0,
+    subscribedDietPlans: 0
+  });
   const [searchTerm, setSearchTerm] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [planToDelete, setPlanToDelete] = useState(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  useEffect(() => {
+    fetchDietPlans();
+    fetchStats();
+  }, []);
+
+  const fetchDietPlans = async () => {
+    try {
+      setIsLoading(true);
+      const response = await axios.get('/api/diet-plans', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      setDietPlans(response.data.data);
+      setError(null);
+    } catch (err) {
+      setError('Failed to fetch diet plans');
+      console.error('Error fetching diet plans:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchStats = async () => {
+    try {
+      const response = await axios.get('/api/diet-plans/stats', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (response.data.success) {
+        setStats(response.data.data);
+      }
+    } catch (err) {
+      console.error('Error fetching stats:', err);
+    }
+  };
   
   const handleDeleteClick = (plan) => {
     setPlanToDelete(plan);
     setShowDeleteConfirm(true);
   };
   
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (planToDelete) {
-      setDietPlans(dietPlans.filter(plan => plan.id !== planToDelete.id));
-      setShowDeleteConfirm(false);
-      setPlanToDelete(null);
+      try {
+        const response = await axios.delete(`/api/diet-plans/${planToDelete._id}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        
+        if (response.data.success) {
+          setDietPlans(dietPlans.filter(plan => plan._id !== planToDelete._id));
+          setShowDeleteConfirm(false);
+          setPlanToDelete(null);
+          fetchStats(); // Refresh stats after deletion
+        }
+      } catch (err) {
+        console.error('Error deleting diet plan:', err);
+        alert('Failed to delete diet plan');
+      }
     }
   };
   
   const cancelDelete = () => {
     setShowDeleteConfirm(false);
     setPlanToDelete(null);
+  };
+
+  const handleEditClick = (plan) => {
+    setSelectedPlan(plan);
+    setShowEditModal(true);
+  };
+
+  const handleCreateClick = () => {
+    setSelectedPlan(null);
+    setShowCreateModal(true);
+  };
+
+  const handleViewDetails = (plan) => {
+    // Navigate to diet plan details page
+    window.location.href = `/diet-plans/${plan._id}`;
   };
   
   const filteredDietPlans = dietPlans.filter(plan => 
@@ -61,15 +131,73 @@ function DietPlanManagement() {
     }
   };
   
+  const handleCreateSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const formData = {
+        name: e.target.name.value,
+        category: e.target.category.value,
+        dailyCalories: parseInt(e.target.dailyCalories.value),
+        mealsPerDay: parseInt(e.target.mealsPerDay.value),
+        blogLink: e.target.blogLink.value
+      };
+
+      const response = await axios.post('/api/diet-plans', formData, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (response.data.success) {
+        setShowCreateModal(false);
+        fetchDietPlans(); // Refresh the list
+        fetchStats(); // Refresh stats
+      }
+    } catch (err) {
+      console.error('Error creating diet plan:', err);
+      alert('Failed to create diet plan');
+    }
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const formData = {
+        _id: selectedPlan._id,
+        name: e.target.name.value,
+        category: e.target.category.value,
+        dailyCalories: parseInt(e.target.dailyCalories.value),
+        mealsPerDay: parseInt(e.target.mealsPerDay.value),
+        blogLink: e.target.blogLink.value
+      };
+      const response = await axios.put(`/api/diet-plans/${selectedPlan._id}`, formData, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (response.data.success) {
+        setShowEditModal(false);
+        setSelectedPlan(null);
+        fetchDietPlans(); // Refresh the list
+        fetchStats(); // Refresh stats
+      }
+    } catch (err) {
+      console.error('Error updating diet plan:', err);
+      alert('Failed to update diet plan');
+    }
+  };
+
   return (
-    <div>
+    <div className="diet-plan-management">
       <div className="back-button-container">
-              <a href="/AdminPanel" className="back-button">
-                <ArrowLeft className="back-icon" />
-                <span>Go Back</span>
-              </a>
-            </div>
-      {/* Top Cards */}
+        <a href="/AdminPanel" className="back-button">
+          <ArrowLeft className="back-icon" />
+          <span>Go Back</span>
+        </a>
+      </div>
+
+      {/* Stats Cards */}
       <div className="cards-container">
         <div className="info-card">
           <div className="icon-container blue">
@@ -77,7 +205,7 @@ function DietPlanManagement() {
           </div>
           <div>
             <p className="card-label">Total Diet Plans</p>
-            <p className="card-value">{dietPlans.length}</p>
+            <p className="card-value">{stats.totalDietPlans || 0}</p>
           </div>
         </div>
         
@@ -86,25 +214,14 @@ function DietPlanManagement() {
             <Utensils className="icon green-icon" />
           </div>
           <div>
-            <p className="card-label">Weight Loss Plans</p>
-            <p className="card-value">{dietPlans.filter(p => p.category === 'Weight Loss').length}</p>
-          </div>
-        </div>
-        
-        <div className="info-card">
-          <div className="icon-container purple">
-            <Utensils className="icon purple-icon" />
-          </div>
-          <div>
-            <p className="card-label">Specialty Diets</p>
-            <p className="card-value">{dietPlans.filter(p => ['Keto', 'Vegan', 'Mediterranean'].includes(p.category)).length}</p>
+            <p className="card-label">Subscribed Plans</p>
+            <p className="card-value">{stats.subscribedDietPlans || 0}</p>
           </div>
         </div>
       </div>
       
       {/* Actions Bar */}
       <div className="actions-bar">
-        {/* Search */}
         <div className="search-container">
           <div className="search-icon-wrapper">
             <Search className="search-icon" />
@@ -118,15 +235,7 @@ function DietPlanManagement() {
           />
         </div>
         
-        {/* Filter Button */}
-        <button className="filter-button">
-          <Filter className="button-icon" />
-          <span>Filter</span>
-          <ChevronDown className="dropdown-icon" />
-        </button>
-        
-        {/* Add Diet Plan Button */}
-        <button className="add-button">
+        <button className="add-button" onClick={handleCreateClick}>
           <Plus className="button-icon" />
           <span>Add Diet Plan</span>
         </button>
@@ -142,84 +251,80 @@ function DietPlanManagement() {
                 <th>Category</th>
                 <th>Daily Calories</th>
                 <th>Meals Per Day</th>
-                <th>Created</th>
+                <th>Subscribers</th>
+                <th>Blog Link</th>
                 <th className="actions-column">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filteredDietPlans.map((plan) => (
-                <tr key={plan.id} className="table-row">
-                  <td>
-                    <div className="plan-name">{plan.name}</div>
-                  </td>
-                  <td>
-                    <div className={`category-badge ${getCategoryColor(plan.category)}`}>
-                      {plan.category}
-                    </div>
-                  </td>
-                  <td className="diet-info">
-                    {plan.calories} kcal
-                  </td>
-                  <td className="diet-info">
-                    {plan.meals}
-                  </td>
-                  <td className="diet-info">
-                    {plan.createdAt}
-                  </td>
-                  <td className="actions-cell">
-                    <button className="edit-button">
-                      <Edit className="small-icon" />
-                    </button>
-                    <button 
-                      className="delete-button"
-                      onClick={() => handleDeleteClick(plan)}
-                    >
-                      <Trash className="small-icon" />
-                    </button>
-                  </td>
+              {isLoading ? (
+                <tr>
+                  <td colSpan="7" className="loading-cell">Loading diet plans...</td>
                 </tr>
-              ))}
+              ) : error ? (
+                <tr>
+                  <td colSpan="7" className="error-cell">{error}</td>
+                </tr>
+              ) : filteredDietPlans.length === 0 ? (
+                <tr>
+                  <td colSpan="7" className="empty-cell">No diet plans found</td>
+                </tr>
+              ) : (
+                filteredDietPlans.map((plan) => (
+                  <tr key={plan._id} className="table-row">
+                    <td>
+                      <div className="plan-name">{plan.name}</div>
+                    </td>
+                    <td>
+                      <div className={`category-badge ${getCategoryColor(plan.category)}`}>
+                        {plan.category}
+                      </div>
+                    </td>
+                    <td className="diet-info">
+                      {plan.dailyCalories} kcal
+                    </td>
+                    <td className="diet-info">
+                      {plan.mealsPerDay}
+                    </td>
+                    <td className="diet-info">
+                      {plan.subscribers?.length || 0}
+                    </td>
+                    <td>
+                      <a 
+                        href={`/blog/${plan.blogLink}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="blog-link"
+                      >
+                        <ExternalLink size={16} />
+                        View Blog
+                      </a>
+                    </td>
+                    <td className="actions-cell">
+                      <button 
+                        className="action-button view"
+                        onClick={() => handleViewDetails(plan)}
+                      >
+                        View
+                      </button>
+                      <button 
+                        className="action-button edit"
+                        onClick={() => handleEditClick(plan)}
+                      >
+                        <Edit className="small-icon" />
+                      </button>
+                      <button 
+                        className="action-button delete"
+                        onClick={() => handleDeleteClick(plan)}
+                      >
+                        <Trash className="small-icon" />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
-        </div>
-        
-        {/* Pagination */}
-        <div className="pagination-container">
-          <div className="pagination-mobile">
-            <button className="pagination-button">
-              Previous
-            </button>
-            <button className="pagination-button">
-              Next
-            </button>
-          </div>
-          <div className="pagination-desktop">
-            <div>
-              <p className="pagination-text">
-                Showing <span className="font-medium">1</span> to <span className="font-medium">{filteredDietPlans.length}</span> of{" "}
-                <span className="font-medium">{filteredDietPlans.length}</span> results
-              </p>
-            </div>
-            <div>
-              <nav className="pagination-nav" aria-label="Pagination">
-                <button className="pagination-arrow-button pagination-prev">
-                  <span className="sr-only">Previous</span>
-                  <svg className="pagination-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                </button>
-                <button className="pagination-page-button">
-                  1
-                </button>
-                <button className="pagination-arrow-button pagination-next">
-                  <span className="sr-only">Next</span>
-                  <svg className="pagination-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                  </svg>
-                </button>
-              </nav>
-            </div>
-          </div>
         </div>
       </div>
       
@@ -248,6 +353,109 @@ function DietPlanManagement() {
               >
                 Delete
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create/Edit Modal */}
+      {(showCreateModal || showEditModal) && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <div className="modal-header">
+              <h3 className="modal-title">
+                {showCreateModal ? 'Create Diet Plan' : 'Edit Diet Plan'}
+              </h3>
+              <button 
+                className="modal-close"
+                onClick={() => {
+                  setShowCreateModal(false);
+                  setShowEditModal(false);
+                  setSelectedPlan(null);
+                }}
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              <form 
+                className="diet-plan-form"
+                onSubmit={showCreateModal ? handleCreateSubmit : handleEditSubmit}
+              >
+                <div className="form-group">
+                  <label htmlFor="name">Name</label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    defaultValue={selectedPlan?.name}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="category">Category</label>
+                  <select id="category" name="category" defaultValue={selectedPlan?.category} required>
+                    <option value="">Select Category</option>
+                    <option value="Weight Loss">Weight Loss</option>
+                    <option value="Muscle Gain">Muscle Gain</option>
+                    <option value="Keto">Keto</option>
+                    <option value="Vegan">Vegan</option>
+                    <option value="Mediterranean">Mediterranean</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label htmlFor="dailyCalories">Daily Calories</label>
+                  <input
+                    type="number"
+                    id="dailyCalories"
+                    name="dailyCalories"
+                    defaultValue={selectedPlan?.dailyCalories}
+                    min="0"
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="mealsPerDay">Meals Per Day</label>
+                  <input
+                    type="number"
+                    id="mealsPerDay"
+                    name="mealsPerDay"
+                    defaultValue={selectedPlan?.mealsPerDay}
+                    min="1"
+                    max="10"
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="blogLink">Blog Link</label>
+                  <input
+                    type="text"
+                    id="blogLink"
+                    name="blogLink"
+                    defaultValue={selectedPlan?.blogLink}
+                    required
+                  />
+                </div>
+                <div className="form-actions">
+                  <button 
+                    type="button"
+                    className="cancel-button"
+                    onClick={() => {
+                      setShowCreateModal(false);
+                      setShowEditModal(false);
+                      setSelectedPlan(null);
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit"
+                    className="submit-button"
+                  >
+                    {showCreateModal ? 'Create' : 'Save Changes'}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>

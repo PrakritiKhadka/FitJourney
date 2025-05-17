@@ -25,6 +25,7 @@ import AdminProtectedRoute from "./components/AdminProtectedRoute";
 import BlogManagement from "./Admin/BlogManagement.jsx";
 import BlogView from "./pages/BlogView.jsx";
 import BlogList from "./pages/BlogList.jsx";
+import DietPlanDetail from "./Admin/DietPlanDetail.jsx";
 import './styles/global.css';
 
 const FooterHandler = () => {
@@ -170,6 +171,14 @@ function App() {
                   element={
                     <AdminProtectedRoute>
                       <BlogManagement />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/diet-plans/:id"
+                  element={
+                    <AdminProtectedRoute>
+                      <DietPlanDetail />
                     </AdminProtectedRoute>
                   }
                 />

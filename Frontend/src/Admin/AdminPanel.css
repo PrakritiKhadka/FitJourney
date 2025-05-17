@@ -17,6 +17,14 @@
     display: flex;
     flex-direction: column;
   }
+
+  .greeting-text {
+    font-weight: bold;
+    font-size: 20px; /* equivalent to text-2xl */
+    color: #ccd7a0;     /* darker neutral tone for better contrast */
+    display: inline-block;
+    margin-bottom: 10px;
+  }
   
   /* Navbar Styles */
   .navbar {
@@ -65,15 +73,17 @@
   }
   
   /* Squares Container */
-  .squares-container {
-    flex: 1;
+  
+   .squares-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 30px;
-    max-width: 800px;
+    max-width: 1000px;
     margin: 0 auto;
-    padding: 30px 20px;
-    place-items: center;
+    padding: 40px 20px;
+    justify-items: center;
+    align-items: center; 
+    box-sizing: border-box;
   }
   
   .square {

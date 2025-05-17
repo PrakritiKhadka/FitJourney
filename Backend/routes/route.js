@@ -1,10 +1,10 @@
 import express from 'express';
 import {verifyLogin} from "../middleware/authMiddleware.js"
 import { createOrUpdateProfile, getProfile } from "../service/profileService.js";
-import { getUser, updateUser  } from "../service/userService.js";
+import { getUser, updateUser, getAllUsers, updateUserByAdmin, deleteUserByAdmin } from "../service/userService.js";
 import { createGoal, deleteGoal, getGoals, updateGoal } from "../service/goalService.js";
 import { login, signUpWithEmail, signupWithGoogle } from '../service/authService.js';
-import { logWorkout, getWorkouts } from "../service/workoutService.js";
+import { createWorkout, getWorkouts, getWorkoutSummaryStats } from "../service/workoutService.js";
 import { 
   getBlogs, 
   getPublishedBlogs, 
@@ -14,6 +14,16 @@ import {
   deleteBlog, 
   togglePublish 
 } from "../service/blogService.js";
+import {
+  createDietPlan,
+  getDietPlans,
+  getDietPlanById,
+  updateDietPlan,
+  deleteDietPlan,
+  subscribeToDietPlan,
+  unsubscribeFromDietPlan,
+  getDietPlanStats
+} from "../service/dietPlanService.js";
 
 const router = express.Router();
 
@@ -29,6 +39,11 @@ router.put('/users/me', verifyLogin, updateUser); // Updated to use the new cont
 router.put('/users/profile', verifyLogin, createOrUpdateProfile); // Keep this for fitness profile data
 router.delete('/users/delete');
 
+// Admin User Management Routes
+router.get('/admin/users', verifyLogin, getAllUsers);
+router.put('/admin/users/:id', verifyLogin, updateUserByAdmin);
+router.delete('/admin/users/:id', verifyLogin, deleteUserByAdmin);
+
 // Routes for profile
 router.get('/profiles', verifyLogin, getProfile);
 router.post('/profiles', verifyLogin, createOrUpdateProfile);
@@ -42,16 +57,27 @@ router.put('/goals/:id', verifyLogin, updateGoal);
 router.delete('/goals/:id', verifyLogin, deleteGoal);
 
 // Routes for Workout
-router.post('/workouts', verifyLogin, logWorkout);
+router.post('/workouts', verifyLogin, createWorkout);
 router.get('/workouts', verifyLogin, getWorkouts);
+router.get('/workouts/stats', verifyLogin, getWorkoutSummaryStats);
 
 // Routes for Blogs
-router.get('/blogs', getBlogs);
+router.get('/blogs', verifyLogin, getBlogs);
 router.get('/blogs/published', getPublishedBlogs);
 router.get('/blogs/:id', getBlogById);
-router.post('/blogs', createBlog);
-router.put('/blogs/:id', updateBlog);
-router.delete('/blogs/:id', deleteBlog);
-router.patch('/blogs/:id/publish', togglePublish);
+router.post('/blogs', verifyLogin, createBlog);
+router.put('/blogs/:id', verifyLogin, updateBlog);
+router.delete('/blogs/:id', verifyLogin, deleteBlog);
+router.patch('/blogs/:id/publish', verifyLogin, togglePublish);
+
+// Routes for Diet Plans
+router.get('/diet-plans/stats',verifyLogin, getDietPlanStats);
+router.post('/diet-plans', verifyLogin, createDietPlan);
+router.get('/diet-plans', verifyLogin, getDietPlans);
+router.get('/diet-plans/:id', verifyLogin, getDietPlanById);
+router.put('/diet-plans/:id',verifyLogin, updateDietPlan);
+router.delete('/diet-plans/:id', verifyLogin, deleteDietPlan);
+router.post('/diet-plans/:id/subscribe', verifyLogin, subscribeToDietPlan);
+router.post('/diet-plans/:id/unsubscribe', verifyLogin, unsubscribeFromDietPlan);
 
 export default router;
