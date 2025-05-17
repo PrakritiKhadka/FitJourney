@@ -14,6 +14,16 @@ import {
   deleteBlog, 
   togglePublish 
 } from "../service/blogService.js";
+import {
+  createDietPlan,
+  getDietPlans,
+  getDietPlanById,
+  updateDietPlan,
+  deleteDietPlan,
+  subscribeToDietPlan,
+  unsubscribeFromDietPlan,
+  getDietPlanStats
+} from "../service/dietPlanService.js";
 
 const router = express.Router();
 
@@ -59,5 +69,15 @@ router.post('/blogs', verifyLogin, createBlog);
 router.put('/blogs/:id', verifyLogin, updateBlog);
 router.delete('/blogs/:id', verifyLogin, deleteBlog);
 router.patch('/blogs/:id/publish', verifyLogin, togglePublish);
+
+// Routes for Diet Plans
+router.get('/diet-plans/stats',verifyLogin, getDietPlanStats);
+router.post('/diet-plans', verifyLogin, createDietPlan);
+router.get('/diet-plans', verifyLogin, getDietPlans);
+router.get('/diet-plans/:id', verifyLogin, getDietPlanById);
+router.put('/diet-plans/:id',verifyLogin, updateDietPlan);
+router.delete('/diet-plans/:id', verifyLogin, deleteDietPlan);
+router.post('/diet-plans/:id/subscribe', verifyLogin, subscribeToDietPlan);
+router.post('/diet-plans/:id/unsubscribe', verifyLogin, unsubscribeFromDietPlan);
 
 export default router;
