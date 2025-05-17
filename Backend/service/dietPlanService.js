@@ -258,3 +258,20 @@ export const getDietPlanStats = async (req, res) => {
     });
   }
 };
+
+export const getSubscribedDietPlanById = async (req, res) => {
+  try {
+    const userId = req.user ? req.user._id : null;
+    const dietPlan = await DietPlan.find({subscribers:userId})
+
+    res.status(200).json({
+      success: true,
+      data: dietPlan,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};

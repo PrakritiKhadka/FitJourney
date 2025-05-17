@@ -26,8 +26,8 @@ export const createWorkout = async (req, res) => {
       recurringDays, 
       reminderEnabled, 
       reminderTime,
-      isAdminWorkout 
-    } = req.body;
+      isAdminWorkout
+        } = req.body;
     
     // Validate required fields
     if (!name || !workoutType || !duration || !intensityLevel || !date || !time) {
@@ -58,7 +58,8 @@ export const createWorkout = async (req, res) => {
       recurringDays,
       reminderEnabled,
       reminderTime: reminderTime || 30,
-      isAdminWorkout: true // Since this is only accessible to admins
+      isAdminWorkout: isAdminWorkout,
+      isReUsed: false
     });
 
     const savedWorkout = await newWorkout.save();
@@ -74,6 +75,24 @@ export const createWorkout = async (req, res) => {
       success: false, 
       error: 'Failed to save workout: ' + err.message 
     });
+  }
+};
+
+export const getAdminWorkouts = async (req, res) => {
+  try {
+    const workouts = await Workout.find({ isAdminWorkout: true, isReUsed: false });
+    res.status(200).json({ success: true, data: workouts });
+  } catch (err) {
+    console.error('Error fetching admin workouts:', err);
+  }
+};
+
+export const getSubscribedWorkouts = async (req, res) => {
+  try {
+    const workouts = await Workout.find({ isAdminWorkout: false , userId: req.user._id});
+    res.status(200).json({ success: true, data: workouts });
+  } catch (err) {
+    console.error('Error fetching subscribed workouts:', err);
   }
 };
 
@@ -207,6 +226,14 @@ export const useAdminWorkout = async (req, res) => {
       });
     }
 
+    const existingWorkout = await Workout.findOne({userId:userId,isReUsed:true, name:adminWorkout.name, workoutType:adminWorkout.workoutType, duration:adminWorkout.duration, intensityLevel:adminWorkout.intensityLevel});
+    if(existingWorkout){
+      return res.status(400).json({
+        success: false,
+        error: 'Workout already exists'
+      });
+    }
+
     // Create a new workout based on the admin workout
     const newWorkout = new Workout({
       ...adminWorkout.toObject(),
@@ -215,7 +242,8 @@ export const useAdminWorkout = async (req, res) => {
       createdBy: userId,
       isAdminWorkout: false,
       date: new Date(),
-      usageCount: 0
+      usageCount: 0,
+      isReUsed: true
     });
 
     const savedWorkout = await newWorkout.save();
@@ -251,7 +279,7 @@ export const getWorkoutStats = async (req, res) => {
 
     const stats = await Workout.aggregate([
       {
-        $match: { isAdminWorkout: true }
+        $match: { isAdminWorkout: true, isReUsed: false }
       },
       {
         $group: {
@@ -338,7 +366,7 @@ export const getWorkoutSummaryStats = async (req, res) => {
     const totalUserCompletedWorkouts = userCompletedWorkouts.length;
     const totalUserDurationCompleted = userCompletedWorkouts.reduce((sum, w) => sum + (w.duration || 0), 0);
 
-    const adminCreatedWorkouts = workouts.filter(w => w.isAdminWorkout == true);
+    const adminCreatedWorkouts = workouts.filter(w => w.isAdminWorkout == true && w.isReUsed==false);
     const totalAdminCreatedWorkouts = adminCreatedWorkouts.length;
     const adminCompletedWorkouts = adminCreatedWorkouts.filter(w => w.completionStatus === 'completed');
     const totalAdminCompletedWorkouts = adminCompletedWorkouts.length;

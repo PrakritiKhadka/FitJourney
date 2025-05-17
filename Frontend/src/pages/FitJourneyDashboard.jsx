@@ -1,341 +1,942 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import '../styles/FitJourneyDashboard.css';
+import useUserStore from '../store/user';
+import { Eye, Plus, Calendar, Clock, Repeat, Bell } from 'lucide-react';
+import WorkoutForm from './WorkoutForm';
 
 const FitJourneyDashboard = () => {
   const navigate = useNavigate();
-  const [workouts, setWorkouts] = useState([]);
-  const [popularWorkouts, setPopularWorkouts] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [recentError, setRecentError] = useState(null);
-  const [popularError, setPopularError] = useState(null);
-  const [recommendedWorkouts, setRecommendedWorkouts] = useState([]);
-  const [showAllRecommended, setShowAllRecommended] = useState(false);
-  
-  // Fetch workouts and popular workouts on component mount
+  const { user, updateProfile } = useUserStore();
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [stats, setStats] = useState({
+    workoutsThisMonth: 0,
+    goalCompletion: 0,
+    caloriesBurned: 0,
+    activeDays: 0
+  });
+  const [subscribedDietPlan, setSubscribedDietPlan] = useState(null);
+  const [recommendedBlogs, setRecommendedBlogs] = useState([]);
+  const [recommendedDietPlans, setRecommendedDietPlans] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    age: '',
+    gender: '',
+    goals: []
+  });
+  const [showGoalForm, setShowGoalForm] = useState(false);
+  const [goalData, setGoalData] = useState({
+    calories: 0
+  });
+  const [subscribedWorkouts, setSubscribedWorkouts] = useState([]);
+  const [adminWorkouts, setAdminWorkouts] = useState([]);
+  const [selectedWorkout, setSelectedWorkout] = useState(null);
+  const [showWorkoutModal, setShowWorkoutModal] = useState(false);
+  const [showCreateWorkoutModal, setShowCreateWorkoutModal] = useState(false);
+  const [activeDietTab, setActiveDietTab] = useState('subscribed');
+  const [showDietPlanModal, setShowDietPlanModal] = useState(false);
+  const [selectedDietPlan, setSelectedDietPlan] = useState(null);
+  const [showSubscribeConfirm, setShowSubscribeConfirm] = useState(false);
+  const [dietPlanToSubscribe, setDietPlanToSubscribe] = useState(null);
+
   useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        // Fetch user's workouts
-        const workoutsResponse = await fetch('/api/workouts', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-        
-        const workoutsData = await workoutsResponse.json();
-        
-        if (!workoutsResponse.ok) {
-          setRecentError(workoutsData.error || 'Failed to fetch workouts');
-        } else {
-          setWorkouts(workoutsData.data);
-          setRecentError(null);
-        }
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        age: user.age || '',
+        gender: user.gender || '',
+        goals: user.goals || []
+      });
+    }
+  }, [user]);
 
-        // Fetch popular workouts (admin workouts sorted by usage)
-        const popularResponse = await fetch('/api/workouts/stats', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-        
-        const popularData = await popularResponse.json();
-        
-        if (!popularResponse.ok) {
-          setPopularError(popularData.error || 'Failed to fetch popular workouts');
-        } else {
-          setPopularWorkouts(popularData.data);
-          setPopularError(null);
-          // Recommended: admin-created and popular
-          setRecommendedWorkouts(popularData.data.filter(w => w.totalUsage > 0));
-        }
-      } catch (err) {
-        setRecentError('Failed to fetch workouts');
-        setPopularError('Failed to fetch popular workouts');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchData();
+  useEffect(() => {
+    fetchUserStats();
+    fetchSubscribedDietPlan();
+    fetchRecommendedBlogs();
+    fetchRecommendedDietPlans();
+    fetchWorkouts();
   }, []);
-  
-  // Format date to display nicely
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(today.getDate() - 1);
-    
-    if (date.toDateString() === today.toDateString()) {
-      return `Today, ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-    } else if (date.toDateString() === yesterday.toDateString()) {
-      return `Yesterday, ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-    } else {
-      return `${date.toLocaleDateString([], { month: 'short', day: 'numeric' })}, ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+
+  const fetchWorkouts = async () => {
+    try {
+      const adminWorkouts = await fetch('/api/workouts/admin', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      const adminData = await adminWorkouts.json();
+      const subscribedWorkouts = await fetch('/api/workouts/subscribed', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      const subscribedData = await subscribedWorkouts.json();
+      setSubscribedWorkouts(subscribedData);
+      setAdminWorkouts(adminData);
+    } catch (err) {
+      setError(err.message || 'Failed to fetch workouts');
     }
   };
 
-  const handleUseWorkout = async (workoutId) => {
+  const handleSubscribeWorkout = async (workoutId) => {
     try {
-      const response = await fetch(`/api/workouts/admin/${workoutId}/use`, {
+      const response = await fetch(`/api/workouts/${workoutId}/subscribe`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to subscribe to workout');
+      }
+
+      // Refresh workouts after subscription
+      fetchWorkouts();
+    } catch (err) {
+      setError(err.message || 'Failed to subscribe to workout');
+    }
+  };
+
+  const fetchUserStats = async () => {
+    setIsLoading(true);
+    try {
+      // Fetch user stats
+      const statsResponse = await fetch('/api/workouts/stats', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const statsData = await statsResponse.json();
+      if (statsResponse.ok) {
+        setStats(statsData);
+      }
+    } catch (err) {
+      setError('Failed to fetch dashboard data');
+      console.error('Error fetching dashboard data:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchSubscribedDietPlan = async () => {
+    setIsLoading(true);
+    try {
+      // Fetch subscribed diet plan
+      const dietPlanResponse = await fetch('/api/diet-plans', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const dietPlanData = await dietPlanResponse.json();
+      if (dietPlanResponse.ok) {
+        setSubscribedDietPlan(dietPlanData);
+      }
+    } catch (err) {
+      setError('Failed to fetch diet plan');
+      console.error('Error fetching diet plan:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchRecommendedBlogs = async () => {
+    setIsLoading(true);
+    try {
+      // Fetch recommended blogs
+      const blogsResponse = await fetch('/api/blogs/published', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const blogsData = await blogsResponse.json();
+      if (blogsResponse.ok) {
+        // Get first 3 blogs for the dashboard
+        setRecommendedBlogs(blogsData.slice(0, 3));
+      }
+    } catch (err) {
+      setError('Failed to fetch recommended blogs');
+      console.error('Error fetching recommended blogs:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchRecommendedDietPlans = async () => {
+    try {
+      const response = await fetch('/api/diet-plans', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch recommended diet plans');
+      }
+
+      const data = await response.json();
+      setRecommendedDietPlans(data);
+    } catch (err) {
+      setError(err.message || 'Failed to fetch recommended diet plans');
+    }
+  };
+
+  const handleProfileUpdate = async (e) => {
+    e.preventDefault();
+    try {
+      await updateProfile(formData);
+      setIsEditing(false);
+    } catch (err) {
+      setError(err.message || 'Failed to update profile');
+    }
+  };
+
+  const handleGoalSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      // Implement goal submission logic
+    } catch (err) {
+      setError(err.message || 'Failed to set goal');
+    }
+  };
+
+  const handleSubscribeDietPlan = async (planId) => {
+    setDietPlanToSubscribe(planId);
+    setShowSubscribeConfirm(true);
+  };
+
+  const confirmSubscribeDietPlan = async () => {
+    try {
+      const response = await fetch(`/api/diet-plans/${dietPlanToSubscribe}/subscribe`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to use workout');
+        throw new Error('Failed to subscribe to diet plan');
       }
 
-      // Refresh workouts after using a popular workout
-      const workoutsResponse = await fetch('/api/workouts', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
-      const workoutsData = await workoutsResponse.json();
-      
-      if (!workoutsResponse.ok) {
-        throw new Error(workoutsData.error || 'Failed to fetch workouts');
-      }
-      
-      setWorkouts(workoutsData.data);
+      // Refresh diet plans after subscription
+      fetchSubscribedDietPlan();
+      setShowSubscribeConfirm(false);
+      setDietPlanToSubscribe(null);
     } catch (err) {
-      console.error('Error using workout:', err);
-      alert('Failed to use workout: ' + err.message);
+      setError(err.message || 'Failed to subscribe to diet plan');
     }
   };
 
-  const handleCompleteWorkout = async (workoutId) => {
-    try {
-      const response = await fetch(`/api/workouts/${workoutId}/complete`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to complete workout');
-      }
-
-      // Refresh workouts after completing
-      const workoutsResponse = await fetch('/api/workouts', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
-      const workoutsData = await workoutsResponse.json();
-      
-      if (!workoutsResponse.ok) {
-        throw new Error(workoutsData.error || 'Failed to fetch workouts');
-      }
-      
-      setWorkouts(workoutsData.data);
-    } catch (err) {
-      console.error('Error completing workout:', err);
-      alert('Failed to complete workout: ' + err.message);
-    }
-  };
-
-  const getStatusBadge = (status) => {
-    const statusStyles = {
-      pending: { bg: '#fef3c7', color: '#92400e' },
-      completed: { bg: '#dcfce7', color: '#166534' },
-      skipped: { bg: '#fee2e2', color: '#991b1b' }
+  const getCategoryColor = (category) => {
+    const categoryMap = {
+      'Weight Loss': 'weight-loss',
+      'Muscle Gain': 'muscle-gain',
+      'Maintenance': 'maintenance',
+      'Vegetarian': 'vegetarian',
+      'Vegan': 'vegan'
     };
-    
-    const style = statusStyles[status] || statusStyles.pending;
-    
-    return (
-      <span style={{
-        backgroundColor: style.bg,
-        color: style.color,
-        padding: '4px 8px',
-        borderRadius: '4px',
-        fontSize: '0.875rem',
-        fontWeight: '500'
-      }}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
-      </span>
-    );
+    return categoryMap[category] || 'maintenance';
   };
-  
-  return (
-    <div className="container">
-      <div className="app-title">Fit Journey</div>
-      
-      <div className="user-profile">
-        <button 
-          className="btn btn-profile" 
-          onClick={() => navigate("/Profile")}
-        >
-          View Profile
-        </button>
-      </div>
-      
-      <div className="action-buttons">
-        <button className="btn btn-primary" onClick={() => navigate("/SetGoals")}>🎯 Set New Goal</button>
-        <button className="btn btn-secondary" onClick={() => navigate("/progress")}>📊 View Progress</button>
-        <button className="btn btn-accent" onClick={() => navigate("/WorkoutForm")}>➕ Log Workout</button>
-      </div>
-      
-      <div className="dashboard-grid">
-        <div className="dashboard-card progress-card">
-          <h3>
-            <span className="card-icon icon-blue">📈</span>
-            Your Progress
-          </h3>
-          <div className="progress-chart">Weekly Progress Chart (Last 8 Weeks)</div>
-        </div>
-        
-        <div className="dashboard-card stats-card">
-          <h3>
-            <span className="card-icon icon-green">📊</span>
-            Stats Overview
-          </h3>
-          <div className="stats-grid">
-            <div className="stat-item">
-              <div className="stat-value">12</div>
-              <div className="stat-label">Workouts This Month</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-value">87%</div>
-              <div className="stat-label">Goal Completion</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-value">3.2k</div>
-              <div className="stat-label">Calories Burned</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-value">4</div>
-              <div className="stat-label">Active Days</div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="dashboard-card workout-card">
-          <h3>
-            <span className="card-icon icon-orange">🏋️</span>
-            Recent Workouts
-          </h3>
-          
-          {isLoading ? (
-            <div className="workout-loading">Loading recent workouts...</div>
-          ) : recentError ? (
-            <div className="workout-error">Error loading workouts: {recentError}</div>
-          ) : (
-            <div className="workout-grid">
-              {workouts.length > 0 ? (
-                workouts.slice(0, 4).map((workout, index) => (
-                  <div className="workout-item" key={workout._id || index}>
-                    <div className="workout-type">{workout.workoutType}</div>
-                    <div className="workout-date">{formatDate(workout.date)}</div>
-                    <div className="workout-stats">
-                      <span>{workout.intensityLevel} intensity</span>
-                      <span>{workout.duration} min</span>
-                      {workout.notes && <span>{workout.notes.substring(0, 15)}{workout.notes.length > 15 ? '...' : ''}</span>}
-                    </div>
-                    <div className="workout-actions">
-                      {getStatusBadge(workout.completionStatus)}
-                      {workout.completionStatus === 'pending' && (
-                        <button 
-                          className="complete-btn"
-                          onClick={() => handleCompleteWorkout(workout._id)}
-                        >
-                          Mark Complete
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="no-workouts-message">
-                  No workouts logged yet. Click "Log Workout" to add your first workout!
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'dashboard':
+        return (
+          <div className="dashboard-content">
+            <div className="stats-overview">
+              <h2>Your Fitness Stats</h2>
+              <div className="stats-grid">
+                <div className="stat-card">
+                  <div className="stat-icon">🏋️</div>
+                  <div className="stat-value">{stats.workoutsThisMonth}</div>
+                  <div className="stat-label">Workouts This Month</div>
                 </div>
-              )}
+                <div className="stat-card">
+                  <div className="stat-icon">🎯</div>
+                  <div className="stat-value">{stats.goalCompletion}%</div>
+                  <div className="stat-label">Goal Completion</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon">🔥</div>
+                  <div className="stat-value">{stats.caloriesBurned}</div>
+                  <div className="stat-label">Calories Burned</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon">📅</div>
+                  <div className="stat-value">{stats.activeDays}</div>
+                  <div className="stat-label">Active Days</div>
+                </div>
+              </div>
             </div>
-          )}
-        </div>
-        
-        <div className="dashboard-card popular-workouts-card">
-          <h3>
-            <span className="card-icon icon-blue">⭐</span>
-            Popular Workouts
-          </h3>
-          
-          {isLoading ? (
-            <div className="workout-loading">Loading popular workouts...</div>
-          ) : popularError ? (
-            <div className="workout-error">Error loading popular workouts: {popularError}</div>
-          ) : (
-            <div className="popular-workouts-grid">
-              {popularWorkouts.slice(0, 3).map((workout) => (
-                <div key={workout._id} className="popular-workout-item">
-                  <div className="workout-type">{workout._id}</div>
-                  <div className="workout-stats">
-                    <span>Total Usage: {workout.totalUsage}</span>
-                    <span>Last Used: {workout.lastUsed ? formatDate(workout.lastUsed) : 'Never'}</span>
-                  </div>
+
+            <div className="diet-plan-section">
+              <div className="diet-plan-header">
+                <h2>Diet Plans</h2>
+                <div className="diet-plan-tabs">
                   <button 
-                    className="use-workout-btn"
-                    onClick={() => handleUseWorkout(workout._id)}
+                    className={`tab-button ${activeDietTab === 'subscribed' ? 'active' : ''}`}
+                    onClick={() => setActiveDietTab('subscribed')}
                   >
-                    Use This Workout
+                    Your Diet Plan
+                  </button>
+                  <button 
+                    className={`tab-button ${activeDietTab === 'recommended' ? 'active' : ''}`}
+                    onClick={() => setActiveDietTab('recommended')}
+                  >
+                    Recommended Plans
                   </button>
                 </div>
-              ))}
+              </div>
+
+              <div className="diet-plan-content">
+                {activeDietTab === 'subscribed' ? (
+                  <div className="table-container">
+                    <table className="diet-table">
+                      <thead>
+                        <tr>
+                          <th>Name</th>
+                          <th>Category</th>
+                          <th>Daily Calories</th>
+                          <th>Meals Per Day</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {subscribedDietPlan ? (
+                          <tr>
+                            <td>{subscribedDietPlan.name}</td>
+                            <td>
+                              <span className={`category-badge ${getCategoryColor(subscribedDietPlan.category)}`}>
+                                {subscribedDietPlan.category}
+                              </span>
+                            </td>
+                            <td>{subscribedDietPlan.dailyCalories} kcal</td>
+                            <td>{subscribedDietPlan.mealsPerDay}</td>
+                            <td>
+                              <button 
+                                className="btn-icon"
+                                onClick={() => {
+                                  setSelectedDietPlan(subscribedDietPlan);
+                                  setShowDietPlanModal(true);
+                                }}
+                                title="View Details"
+                              >
+                                <Eye size={16} />
+                              </button>
+                            </td>
+                          </tr>
+                        ) : (
+                          <tr>
+                            <td colSpan="5" className="empty-message">No diet plan subscribed yet</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="table-container">
+                    <table className="diet-table">
+                      <thead>
+                        <tr>
+                          <th>Name</th>
+                          <th>Category</th>
+                          <th>Daily Calories</th>
+                          <th>Meals Per Day</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {recommendedDietPlans.map(plan => (
+                          <tr key={plan._id}>
+                            <td>{plan.name}</td>
+                            <td>
+                              <span className={`category-badge ${getCategoryColor(plan.category)}`}>
+                                {plan.category}
+                              </span>
+                            </td>
+                            <td>{plan.dailyCalories} kcal</td>
+                            <td>{plan.mealsPerDay}</td>
+                            <td>
+                              <div className="table-actions">
+                                <button 
+                                  className="btn-icon"
+                                  onClick={() => {
+                                    setSelectedDietPlan(plan);
+                                    setShowDietPlanModal(true);
+                                  }}
+                                  title="View Details"
+                                >
+                                  <Eye size={16} />
+                                </button>
+                                <button 
+                                  className="btn-icon subscribe"
+                                  onClick={() => handleSubscribeDietPlan(plan._id)}
+                                  title="Subscribe"
+                                >
+                                  <Plus size={16} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-        </div>
-        
-        <div className="dashboard-card recommended-workouts-card">
-          <h3>
-            <span className="card-icon icon-blue">💡</span>
-            Recommended Workouts
-          </h3>
-          <div className="popular-workouts-grid">
-            {recommendedWorkouts.length > 0 ? (
-              <>
-                {recommendedWorkouts.slice(0, showAllRecommended ? undefined : 3).map((workout) => (
-                  <div key={workout._id} className="popular-workout-item">
-                    <div className="workout-type">{workout._id}</div>
-                    <div className="workout-stats">
-                      <span>Total Usage: {workout.totalUsage}</span>
-                      <span>Last Used: {workout.lastUsed ? formatDate(workout.lastUsed) : 'Never'}</span>
+
+            <div className="recommended-blogs">
+              <h2>Recommended Blogs</h2>
+              <div className="blogs-grid">
+                {recommendedBlogs.map(blog => (
+                  <div key={blog._id} className="blog-card">
+                    <img src={blog.coverImage} alt={blog.title} className="blog-image" />
+                    <div className="blog-content">
+                      <h3>{blog.title}</h3>
+                      <p>{blog.excerpt}</p>
+                      <button 
+                        className="btn btn-secondary"
+                        onClick={() => navigate(`/blog/${blog._id}`)}
+                      >
+                        Read More
+                      </button>
                     </div>
-                    <button 
-                      className="use-workout-btn"
-                      onClick={() => handleUseWorkout(workout._id)}
-                    >
-                      Use This Workout
-                    </button>
                   </div>
                 ))}
-                {!showAllRecommended && recommendedWorkouts.length > 3 && (
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'profile':
+        return (
+          <div className="profile-content">
+            <h2>Your Profile</h2>
+            {!isEditing ? (
+              <div className="profile-details">
+                <div className="profile-row">
+                  <div className="profile-label">Name</div>
+                  <div className="profile-value">{user.name}</div>
+                </div>
+                <div className="profile-row">
+                  <div className="profile-label">Email</div>
+                  <div className="profile-value">{user.email}</div>
+                </div>
+                <div className="profile-row">
+                  <div className="profile-label">Age</div>
+                  <div className="profile-value">{user.age || 'Not specified'}</div>
+                </div>
+                <div className="profile-row">
+                  <div className="profile-label">Gender</div>
+                  <div className="profile-value">
+                    {user.gender ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1) : 'Not specified'}
+                  </div>
+                </div>
+                <div className="profile-row">
+                  <div className="profile-label">Goals</div>
+                  <div className="profile-value">
+                    {user.goals && user.goals.length > 0 ? (
+                      <ul className="goals-list">
+                        {user.goals.map((goal, index) => (
+                          <li key={index}>{goal}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      'No goals set'
+                    )}
+                  </div>
+                </div>
+                <div className="profile-actions">
                   <button 
-                    className="see-more-btn"
-                    onClick={() => navigate('/recommended-workouts')}
+                    className="btn btn-primary"
+                    onClick={() => setIsEditing(true)}
                   >
-                    See More Workouts
+                    Edit Profile
                   </button>
-                )}
-              </>
+                  <button 
+                    className="btn btn-secondary"
+                    onClick={() => setShowGoalForm(true)}
+                  >
+                    Set Goals
+                  </button>
+                </div>
+              </div>
             ) : (
-              <div className="workout-error">No recommended workouts available.</div>
+              <form className="profile-form" onSubmit={handleProfileUpdate}>
+                <div className="form-group">
+                  <label htmlFor="name">Name</label>
+                  <input
+                    type="text"
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="age">Age</label>
+                  <input
+                    type="number"
+                    id="age"
+                    value={formData.age}
+                    onChange={(e) => setFormData({...formData, age: e.target.value})}
+                    min="13"
+                    max="120"
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="gender">Gender</label>
+                  <select
+                    id="gender"
+                    value={formData.gender}
+                    onChange={(e) => setFormData({...formData, gender: e.target.value})}
+                  >
+                    <option value="">Select Gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="non-binary">Non-binary</option>
+                    <option value="prefer-not-to-say">Prefer not to say</option>
+                  </select>
+                </div>
+                <div className="form-actions">
+                  <button type="submit" className="btn btn-primary">Save Changes</button>
+                  <button 
+                    type="button" 
+                    className="btn btn-secondary"
+                    onClick={() => setIsEditing(false)}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {showGoalForm && (
+              <div className="goal-form-modal">
+                <div className="goal-form-content">
+                  <h3>Set Your Fitness Goals</h3>
+                  <form onSubmit={handleGoalSubmit}>
+                    <div className="form-group">
+                      <label htmlFor="calorieGoal">Daily Calorie Burn Goal</label>
+                      <input
+                        type="number"
+                        id="calorieGoal"
+                        value={goalData.calories}
+                        onChange={(e) => setGoalData({...goalData, calories: e.target.value})}
+                        min="100"
+                        max="2000"
+                        required
+                      />
+                    </div>
+                    <div className="form-actions">
+                      <button type="submit" className="btn btn-primary">Save Goal</button>
+                      <button 
+                        type="button" 
+                        className="btn btn-secondary"
+                        onClick={() => setShowGoalForm(false)}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
             )}
           </div>
-        </div>
+        );
+
+      case 'workouts':
+        return (
+          <div className="workouts-content">
+            <div className="workout-header">
+              <h2>Your Workouts</h2>
+              <button 
+                className="btn btn-primary"
+                onClick={() => setShowCreateWorkoutModal(true)}
+              >
+                Create New Workout
+              </button>
+            </div>
+
+            <div className="workouts-section">
+              <h3>Your Subscribed Workouts</h3>
+              <div className="workout-table-container">
+                <table className="workout-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Type</th>
+                      <th>Duration</th>
+                      <th>Intensity</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {subscribedWorkouts.data.map(workout => (
+                      <tr key={workout._id}>
+                        <td>{workout.name}</td>
+                        <td>{workout.workoutType}</td>
+                        <td>{workout.duration} min</td>
+                        <td>
+                          <span className={`intensity-badge ${workout.intensityLevel.toLowerCase()}`}>
+                            {workout.intensityLevel}
+                          </span>
+                        </td>
+                        <td>
+                          <button 
+                            className="btn-icon"
+                            onClick={() => {
+                              setSelectedWorkout(workout);
+                              setShowWorkoutModal(true);
+                            }}
+                            title="View Details"
+                          >
+                            <Eye size={16} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="workouts-section">
+              <h3>Recommended Workouts</h3>
+              <div className="workout-table-container">
+                <table className="workout-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Type</th>
+                      <th>Duration</th>
+                      <th>Intensity</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {adminWorkouts.data.map(workout => (
+                      <tr key={workout._id}>
+                        <td>{workout.name}</td>
+                        <td>{workout.workoutType}</td>
+                        <td>{workout.duration} min</td>
+                        <td>
+                          <span className={`intensity-badge ${workout.intensityLevel}`}>
+                            {workout.intensityLevel}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="table-actions">
+                            <button 
+                              className="btn-icon"
+                              onClick={() => {
+                                setSelectedWorkout(workout);
+                                setShowWorkoutModal(true);
+                              }}
+                              title="View Details"
+                            >
+                              <Eye size={16} />
+                            </button>
+                            <button 
+                              className="btn-icon subscribe"
+                              onClick={() => handleSubscribeWorkout(workout._id)}
+                              title="Subscribe"
+                            >
+                              <Plus size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'diet-plans':
+        return (
+          <div className="diet-plans-content">
+            <h2>Diet Plans</h2>
+            <button 
+              className="btn btn-primary"
+              onClick={() => navigate('/diet-plans')}
+            >
+              View All Diet Plans
+            </button>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  if (isLoading) {
+    return <div className="loading">Loading dashboard data...</div>;
+  }
+
+  if (error) {
+    return <div className="error">{error}</div>;
+  }
+
+  return (
+    <div className="dashboard-container">
+      <div className="dashboard-header">
+        <h1>FitJourney Dashboard</h1>
       </div>
+
+      <div className="dashboard-tabs">
+        <button 
+          className={`tab-button ${activeTab === 'dashboard' ? 'active' : ''}`}
+          onClick={() => setActiveTab('dashboard')}
+        >
+          Dashboard
+        </button>
+        <button 
+          className={`tab-button ${activeTab === 'workouts' ? 'active' : ''}`}
+          onClick={() => setActiveTab('workouts')}
+        >
+          Workouts
+        </button>
+        <button 
+          className={`tab-button ${activeTab === 'diet-plans' ? 'active' : ''}`}
+          onClick={() => setActiveTab('diet-plans')}
+        >
+          Diet Plans
+        </button>
+        <button 
+          className={`tab-button ${activeTab === 'profile' ? 'active' : ''}`}
+          onClick={() => setActiveTab('profile')}
+        >
+          Profile
+        </button>
+      </div>
+
+      <div className="dashboard-content-wrapper">
+        {renderTabContent()}
+      </div>
+
+      {/* Workout Modal */}
+      {showWorkoutModal && selectedWorkout && (
+        <div className="modal-overlay" onClick={() => setShowWorkoutModal(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>{selectedWorkout.name}</h2>
+              <button className="modal-close" onClick={() => setShowWorkoutModal(false)}>×</button>
+            </div>
+            <div className="modal-body">
+              <div className="workout-details">
+                <div className="detail-section">
+                  <h3>Basic Information</h3>
+                  <div className="detail-grid">
+                    <div className="detail-item">
+                      <span className="detail-label">Type</span>
+                      <span className="detail-value">{selectedWorkout.workoutType}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Duration</span>
+                      <span className="detail-value">{selectedWorkout.duration} minutes</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Intensity</span>
+                      <span className={`intensity-badge ${selectedWorkout.intensityLevel.toLowerCase()}`}>
+                        {selectedWorkout.intensityLevel}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="detail-section">
+                  <h3>Schedule</h3>
+                  <div className="detail-grid">
+                    {selectedWorkout.scheduledDate && (
+                      <div className="detail-item">
+                        <Calendar size={16} />
+                        <span className="detail-value">
+                          {new Date(selectedWorkout.scheduledDate).toLocaleDateString()}
+                        </span>
+                      </div>
+                    )}
+                    {selectedWorkout.scheduledTime && (
+                      <div className="detail-item">
+                        <Clock size={16} />
+                        <span className="detail-value">
+                          {selectedWorkout.scheduledTime}
+                        </span>
+                      </div>
+                    )}
+                    {selectedWorkout.isRecurring && selectedWorkout.recurringDays && (
+                      <div className="detail-item recurring-days">
+                        <Repeat size={16} />
+                        <div className="day-chips">
+                          {selectedWorkout.recurringDays.map((day, index) => (
+                            <span key={index} className="day-chip">
+                              {day}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {selectedWorkout.reminderEnabled && selectedWorkout.reminderTime && (
+                      <div className="detail-item">
+                        <Bell size={16} />
+                        <span className="detail-value">
+                          Reminder: {selectedWorkout.reminder} minutes before workout
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="detail-section">
+                  <h3>Description</h3>
+                  <p className="workout-description">{selectedWorkout.notes}</p>
+                </div>
+
+                {selectedWorkout.exercises && (
+                  <div className="detail-section">
+                    <h3>Exercises</h3>
+                    <div className="exercises-list">
+                      {selectedWorkout.exercises.map((exercise, index) => (
+                        <div key={index} className="exercise-item">
+                          <h4>{exercise.name}</h4>
+                          <div className="exercise-details">
+                            <span>Sets: {exercise.sets}</span>
+                            <span>Reps: {exercise.reps}</span>
+                            {exercise.duration && <span>Duration: {exercise.duration}s</span>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Workout Modal */}
+      {showCreateWorkoutModal && (
+        <div className="modal-overlay" onClick={() => setShowCreateWorkoutModal(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Create New Workout</h2>
+              <button className="modal-close" onClick={() => setShowCreateWorkoutModal(false)}>×</button>
+            </div>
+            <div className="modal-body">
+              <WorkoutForm 
+              initialData={selectedWorkout} 
+              isAdminMode={false}
+                onSuccess={() => {
+                  setShowCreateWorkoutModal(false);
+                  fetchWorkouts();
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Diet Plan Detail Modal */}
+      {showDietPlanModal && selectedDietPlan && (
+        <div className="modal-overlay" onClick={() => setShowDietPlanModal(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>{selectedDietPlan.name}</h2>
+              <button className="modal-close" onClick={() => setShowDietPlanModal(false)}>×</button>
+            </div>
+            <div className="modal-body">
+              <div className="diet-plan-details">
+                <div className="detail-section">
+                  <h3>Basic Information</h3>
+                  <div className="detail-grid">
+                    <div className="detail-item">
+                      <span className="detail-label">Category</span>
+                      <span className={`category-badge ${getCategoryColor(selectedDietPlan.category)}`}>
+                        {selectedDietPlan.category}
+                      </span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Daily Calories</span>
+                      <span className="detail-value">{selectedDietPlan.dailyCalories} kcal</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Meals Per Day</span>
+                      <span className="detail-value">{selectedDietPlan.mealsPerDay}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="detail-section">
+                  <h3>Description</h3>
+                  <p className="diet-plan-description">{selectedDietPlan.description}</p>
+                </div>
+
+                {selectedDietPlan.meals && (
+                  <div className="detail-section">
+                    <h3>Meal Plan</h3>
+                    <div className="meals-list">
+                      {selectedDietPlan.meals.map((meal, index) => (
+                        <div key={index} className="meal-item">
+                          <h4>{meal.name}</h4>
+                          <div className="meal-details">
+                            <span>Calories: {meal.calories} kcal</span>
+                            <span>Protein: {meal.protein}g</span>
+                            <span>Carbs: {meal.carbs}g</span>
+                            <span>Fats: {meal.fats}g</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Subscribe Confirmation Modal */}
+      {showSubscribeConfirm && (
+        <div className="modal-overlay" onClick={() => setShowSubscribeConfirm(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Confirm Subscription</h2>
+              <button className="modal-close" onClick={() => setShowSubscribeConfirm(false)}>×</button>
+            </div>
+            <div className="modal-body">
+              <p className="confirmation-message">
+                If you subscribe to this diet plan, your current diet plan will be unsubscribed. Do you want to continue?
+              </p>
+              <div className="modal-actions">
+                <button 
+                  className="btn btn-secondary"
+                  onClick={() => setShowSubscribeConfirm(false)}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="btn btn-primary"
+                  onClick={confirmSubscribeDietPlan}
+                >
+                  Yes, Subscribe
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

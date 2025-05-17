@@ -45,6 +45,10 @@ const WorkoutSchema = new Schema({
     type: Boolean,
     default: false
   },
+  isReUsed: {
+    type: Boolean,
+    default: false
+  },
   isRecurring: {
     type: Boolean,
     default: false

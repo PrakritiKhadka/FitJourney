@@ -85,6 +85,14 @@ function App() {
 
                 {/* Protected routes */}
                 <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <FitJourneyDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
                   path="/FitJourneyDashboard"
                   element={
                     <ProtectedRoute>

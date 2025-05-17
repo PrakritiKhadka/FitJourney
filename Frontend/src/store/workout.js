@@ -35,14 +35,13 @@ const useWorkoutStore = create((set, get) => ({
   
   submitWorkout: async (workoutData) => {
     set({ isLoading: true, error: null });
-    
     try {
       // Ensure duration is properly formatted
       const preparedData = {
         ...workoutData,
         duration: parseInt(workoutData.duration, 10) || 0
       };
-      
+
       const response = await fetch('/api/workouts', {
         method: 'POST',
         headers: {
