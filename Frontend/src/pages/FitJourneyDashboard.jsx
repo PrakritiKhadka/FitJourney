@@ -4,6 +4,7 @@ import '../styles/FitJourneyDashboard.css';
 import useUserStore from '../store/user';
 import { Eye, Plus, Calendar, Clock, Repeat, Bell } from 'lucide-react';
 import WorkoutForm from './WorkoutForm';
+import { showErrorToast, showSuccessToast } from '../toastutil';
 
 const FitJourneyDashboard = () => {
   const navigate = useNavigate();
@@ -64,22 +65,22 @@ const FitJourneyDashboard = () => {
   const fetchWorkouts = async () => {
     try {
       const adminWorkouts = await fetch('/api/workouts/admin', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        
       const adminData = await adminWorkouts.json();
       const subscribedWorkouts = await fetch('/api/workouts/subscribed', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        
       const subscribedData = await subscribedWorkouts.json();
       setSubscribedWorkouts(subscribedData);
       setAdminWorkouts(adminData);
-    } catch (err) {
+      } catch (err) {
       setError(err.message || 'Failed to fetch workouts');
     }
   };
@@ -93,17 +94,23 @@ const FitJourneyDashboard = () => {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
-
+  
+      const result = await response.json(); // ✅ parse the response body
+  
       if (!response.ok) {
-        throw new Error('Failed to subscribe to workout');
+        // Show backend error message if available
+        showErrorToast(result.error || 'Failed to subscribe to workout');
+        return;
       }
-
-      // Refresh workouts after subscription
-      fetchWorkouts();
+  
+      showSuccessToast('Subscribed to workout successfully!');
+      fetchWorkouts(); // ✅ Refresh the UI
     } catch (err) {
       setError(err.message || 'Failed to subscribe to workout');
+      showErrorToast('Network error while subscribing to workout');
     }
   };
+  
 
   const fetchUserStats = async () => {
     setIsLoading(true);
@@ -119,7 +126,7 @@ const FitJourneyDashboard = () => {
         setStats(statsData);
       }
     } catch (err) {
-      setError('Failed to fetch dashboard data');
+      showErrorToast('Failed to fetch dashboard data');
       console.error('Error fetching dashboard data:', err);
     } finally {
       setIsLoading(false);
@@ -140,7 +147,7 @@ const FitJourneyDashboard = () => {
         setSubscribedDietPlan(dietPlanData);
       }
     } catch (err) {
-      setError('Failed to fetch diet plan');
+      showErrorToast('Failed to fetch diet plan');
       console.error('Error fetching diet plan:', err);
     } finally {
       setIsLoading(false);
@@ -162,7 +169,7 @@ const FitJourneyDashboard = () => {
         setRecommendedBlogs(blogsData.slice(0, 3));
       }
     } catch (err) {
-      setError('Failed to fetch recommended blogs');
+      showErrorToast('Failed to fetch recommended blogs');
       console.error('Error fetching recommended blogs:', err);
     } finally {
       setIsLoading(false);
@@ -184,7 +191,7 @@ const FitJourneyDashboard = () => {
       const data = await response.json();
       setRecommendedDietPlans(data);
     } catch (err) {
-      setError(err.message || 'Failed to fetch recommended diet plans');
+      showErrorToast('Failed to fetch recommended diet plans');
     }
   };
 
@@ -203,7 +210,7 @@ const FitJourneyDashboard = () => {
     try {
       // Implement goal submission logic
     } catch (err) {
-      setError(err.message || 'Failed to set goal');
+      showErrorToast('Failed to set goal');
     }
   };
 
@@ -220,7 +227,7 @@ const FitJourneyDashboard = () => {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
-
+      
       if (!response.ok) {
         throw new Error('Failed to subscribe to diet plan');
       }
@@ -230,7 +237,7 @@ const FitJourneyDashboard = () => {
       setShowSubscribeConfirm(false);
       setDietPlanToSubscribe(null);
     } catch (err) {
-      setError(err.message || 'Failed to subscribe to diet plan');
+      showErrorToast('Failed to subscribe to diet plan');
     }
   };
 
@@ -554,7 +561,7 @@ const FitJourneyDashboard = () => {
         );
 
       case 'workouts':
-        return (
+    return (
           <div className="workouts-content">
             <div className="workout-header">
               <h2>Your Workouts</h2>
@@ -631,7 +638,7 @@ const FitJourneyDashboard = () => {
                         <td>
                           <span className={`intensity-badge ${workout.intensityLevel}`}>
                             {workout.intensityLevel}
-                          </span>
+      </span>
                         </td>
                         <td>
                           <div className="table-actions">
@@ -688,7 +695,7 @@ const FitJourneyDashboard = () => {
   if (error) {
     return <div className="error">{error}</div>;
   }
-
+  
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
@@ -721,11 +728,11 @@ const FitJourneyDashboard = () => {
           Profile
         </button>
       </div>
-
+      
       <div className="dashboard-content-wrapper">
         {renderTabContent()}
       </div>
-
+      
       {/* Workout Modal */}
       {showWorkoutModal && selectedWorkout && (
         <div className="modal-overlay" onClick={() => setShowWorkoutModal(false)}>
@@ -801,8 +808,8 @@ const FitJourneyDashboard = () => {
                 <div className="detail-section">
                   <h3>Description</h3>
                   <p className="workout-description">{selectedWorkout.notes}</p>
-                </div>
-
+        </div>
+        
                 {selectedWorkout.exercises && (
                   <div className="detail-section">
                     <h3>Exercises</h3>
@@ -823,7 +830,7 @@ const FitJourneyDashboard = () => {
               </div>
             </div>
           </div>
-        </div>
+            </div>
       )}
 
       {/* Create Workout Modal */}
@@ -881,8 +888,8 @@ const FitJourneyDashboard = () => {
                 <div className="detail-section">
                   <h3>Description</h3>
                   <p className="diet-plan-description">{selectedDietPlan.description}</p>
-                </div>
-
+        </div>
+        
                 {selectedDietPlan.meals && (
                   <div className="detail-section">
                     <h3>Meal Plan</h3>
@@ -901,7 +908,7 @@ const FitJourneyDashboard = () => {
                     </div>
                   </div>
                 )}
-              </div>
+                </div>
             </div>
           </div>
         </div>
@@ -914,24 +921,24 @@ const FitJourneyDashboard = () => {
             <div className="modal-header">
               <h2>Confirm Subscription</h2>
               <button className="modal-close" onClick={() => setShowSubscribeConfirm(false)}>×</button>
-            </div>
+                    </div>
             <div className="modal-body">
               <p className="confirmation-message">
                 If you subscribe to this diet plan, your current diet plan will be unsubscribed. Do you want to continue?
               </p>
               <div className="modal-actions">
-                <button 
+                    <button 
                   className="btn btn-secondary"
                   onClick={() => setShowSubscribeConfirm(false)}
-                >
+                    >
                   Cancel
-                </button>
-                <button 
+                    </button>
+                  <button 
                   className="btn btn-primary"
                   onClick={confirmSubscribeDietPlan}
-                >
+                  >
                   Yes, Subscribe
-                </button>
+                  </button>
               </div>
             </div>
           </div>

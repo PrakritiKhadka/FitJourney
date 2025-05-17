@@ -1,8 +1,15 @@
 // App.jsx
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import Navbar from "./components/navbar.jsx";
 import Footer from "./components/Footer.jsx";
 import Aboutus from "./pages/Aboutus.jsx";
@@ -26,7 +33,7 @@ import BlogManagement from "./Admin/BlogManagement.jsx";
 import BlogView from "./pages/BlogView.jsx";
 import BlogList from "./pages/BlogList.jsx";
 import DietPlanDetail from "./Admin/DietPlanDetail.jsx";
-import './styles/global.css';
+import "./styles/global.css";
 
 const FooterHandler = () => {
   const location = useLocation();
@@ -192,6 +199,18 @@ function App() {
                 />
               </Routes>
             </main>
+            <ToastContainer
+              position="top-right"
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="colored"
+            />
             <FooterHandler />
           </div>
         </Router>

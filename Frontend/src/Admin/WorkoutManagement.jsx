@@ -4,6 +4,7 @@ import './WorkoutManagement.css';
 import WorkoutForm from '../pages/WorkoutForm';
 import useUserStore from "../store/user";
 import axios from 'axios';
+import { showErrorToast, showSuccessToast } from '../toastutil';
 
 
 // Workout Management Component
@@ -59,12 +60,12 @@ function WorkoutManagement() {
       const data = await response.json();
       
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch workouts');
+        showErrorToast(data.error || 'Failed to fetch workouts');
       }
       
       setWorkouts(data.data);
     } catch (err) {
-      setError(err.message);
+      showErrorToast(err.message);
     } finally {
       setIsLoading(false);
     }
@@ -119,12 +120,14 @@ function WorkoutManagement() {
       
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Failed to delete workout');
+        showErrorToast(data.error || 'Failed to delete workout');
+      } else {
+        showSuccessToast('Workout deleted successfully');
       }
-      
+
       setWorkouts(workouts.filter(workout => workout._id !== id));
     } catch (err) {
-      setError(err.message);
+      showErrorToast(err.message);
     }
   };
 

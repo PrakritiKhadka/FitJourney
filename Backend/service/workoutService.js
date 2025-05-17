@@ -399,4 +399,3 @@ export const getWorkoutSummaryStats = async (req, res) => {
     });
   }
 };
-
