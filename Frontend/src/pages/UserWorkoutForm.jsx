@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import useWorkoutStore from '../store/workout.js';
 import '../styles/WorkoutForm.css';
-import { showErrorToast, showSuccessToast } from '../toastutil.js';
 
 const WorkoutForm = ({ initialData, isAdminMode, onSuccess }) => {
   const {
@@ -74,11 +73,10 @@ const WorkoutForm = ({ initialData, isAdminMode, onSuccess }) => {
       recurringDays: selectedDays,
       reminderEnabled: formData.reminderEnabled || false,
       reminderTime: formData.reminderTime || 30,
-      isAdminWorkout: isAdminMode // Set isAdminWorkout based on isAdminMode prop
+      isAdminWorkout: false // Set isAdminWorkout based on isAdminMode prop
     });
     
     if (result.success) {
-      showSuccessToast('Workout created successfully');
       setSubmitted(true);
       // Store data to display in the success popup
       setSuccessData({
@@ -104,7 +102,7 @@ const WorkoutForm = ({ initialData, isAdminMode, onSuccess }) => {
         setShowPopup(false);
       }, 5000);
     } else {
-      showErrorToast('Failed to log workout');
+      alert('Failed to log workout: ' + (result.error || 'Unknown error'));
     }
   };
 

@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Dumbbell, ArrowLeft, BarChart2, Plus } from 'lucide-react';
+import { Dumbbell, ArrowLeft, BarChart2, Plus, Eye, Clock, Calendar, Bell, Repeat } from 'lucide-react';
 import './WorkoutManagement.css';
 import WorkoutForm from '../pages/WorkoutForm';
 import useUserStore from "../store/user";
 import axios from 'axios';
+import { showErrorToast, showSuccessToast } from '../toastutil';
 
 
 // Workout Management Component
@@ -31,6 +32,7 @@ function WorkoutManagement() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedWorkout, setSelectedWorkout] = useState(null);
   const [activeTab, setActiveTab] = useState('admin');
+  const [showViewModal, setShowViewModal] = useState(false);
   const modalRef = useRef();
 
   // Separate admin and user workouts
@@ -58,12 +60,12 @@ function WorkoutManagement() {
       const data = await response.json();
       
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch workouts');
+        showErrorToast(data.error || 'Failed to fetch workouts');
       }
       
       setWorkouts(data.data);
     } catch (err) {
-      setError(err.message);
+      showErrorToast(err.message);
     } finally {
       setIsLoading(false);
     }
@@ -118,12 +120,14 @@ function WorkoutManagement() {
       
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Failed to delete workout');
+        showErrorToast(data.error || 'Failed to delete workout');
+      } else {
+        showSuccessToast('Workout deleted successfully');
       }
-      
+
       setWorkouts(workouts.filter(workout => workout._id !== id));
     } catch (err) {
-      setError(err.message);
+      showErrorToast(err.message);
     }
   };
 
@@ -246,7 +250,7 @@ function WorkoutManagement() {
                     <td>{workout.workoutType}</td>
                     <td>{workout.duration} min</td>
                     <td>
-                      <span className={`intensity-badge ${workout.intensityLevel}`}>
+                      <span className={`intensity-badge ${workout.intensityLevel.toLowerCase()}`}>
                         {workout.intensityLevel}
                       </span>
                     </td>
@@ -258,22 +262,26 @@ function WorkoutManagement() {
                     </td>
                     <td>{workout.lastUsed ? formatDate(workout.lastUsed) : 'Never'}</td>
                     <td>{workout.createdBy?.name || workout.createdBy?.email || 'N/A'}</td>
-                    {activeTab === 'admin' && (
-                      <td className="action-cell">
-                        <button 
-                          className="text-button edit" 
-                          onClick={() => handleEditWorkout(workout)}
-                        >
-                          Edit
-                        </button>
+                    <td className="action-cell">
+                      <button 
+                        className="btn-icon"
+                        onClick={() => {
+                          setSelectedWorkout(workout);
+                          setShowViewModal(true);
+                        }}
+                        title="View Details"
+                      >
+                        <Eye size={16} />
+                      </button>
+                      {activeTab === 'admin' && (
                         <button 
                           className="text-button delete" 
                           onClick={() => handleDeleteWorkout(workout._id)}
                         >
                           Delete
                         </button>
-                      </td>
-                    )}
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -300,6 +308,106 @@ function WorkoutManagement() {
                   fetchWorkouts(); 
                 }} 
               />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add View Details Modal */}
+      {showViewModal && selectedWorkout && (
+        <div className="modal-overlay" onClick={() => setShowViewModal(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>{selectedWorkout.name}</h2>
+              <button className="modal-close" onClick={() => setShowViewModal(false)}>×</button>
+            </div>
+            <div className="modal-body">
+              <div className="workout-details">
+                <div className="detail-section">
+                  <h3>Basic Information</h3>
+                  <div className="detail-grid">
+                    <div className="detail-item">
+                      <span className="detail-label">Type</span>
+                      <span className="detail-value">{selectedWorkout.workoutType}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Duration</span>
+                      <span className="detail-value">{selectedWorkout.duration} minutes</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Intensity</span>
+                      <span className={`intensity-badge ${selectedWorkout.intensityLevel.toLowerCase()}`}>
+                        {selectedWorkout.intensityLevel}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="detail-section">
+                  <h3>Schedule</h3>
+                  <div className="detail-grid">
+                    {selectedWorkout.scheduledDate && (
+                      <div className="detail-item">
+                        <Calendar size={16} />
+                        <span className="detail-value">
+                          {new Date(selectedWorkout.scheduledDate).toLocaleDateString()}
+                        </span>
+                      </div>
+                    )}
+                    {selectedWorkout.scheduledTime && (
+                      <div className="detail-item">
+                        <Clock size={16} />
+                        <span className="detail-value">
+                          {selectedWorkout.scheduledTime}
+                        </span>
+                      </div>
+                    )}
+                    {selectedWorkout.isRecurring && selectedWorkout.recurringDays && (
+                      <div className="detail-item recurring-days">
+                        <Repeat size={16} />
+                        <div className="day-chips">
+                          {selectedWorkout.recurringDays.map((day, index) => (
+                            <span key={index} className="day-chip">
+                              {day}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {selectedWorkout.reminderEnabled && selectedWorkout.reminderTime && (
+                      <div className="detail-item">
+                        <Bell size={16} />
+                        <span className="detail-value">
+                          Reminder: {selectedWorkout.reminderTime} minutes before workout
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="detail-section">
+                  <h3>Description</h3>
+                  <p className="workout-description">{selectedWorkout.notes}</p>
+                </div>
+
+                {selectedWorkout.exercises && (
+                  <div className="detail-section">
+                    <h3>Exercises</h3>
+                    <div className="exercises-list">
+                      {selectedWorkout.exercises.map((exercise, index) => (
+                        <div key={index} className="exercise-item">
+                          <h4>{exercise.name}</h4>
+                          <div className="exercise-details">
+                            <span>Sets: {exercise.sets}</span>
+                            <span>Reps: {exercise.reps}</span>
+                            {exercise.duration && <span>Duration: {exercise.duration}s</span>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

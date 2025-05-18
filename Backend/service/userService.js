@@ -134,3 +134,23 @@ export const deleteUserByAdmin = async (req, res) => {
     res.status(500).json({ message: 'Error deleting user', error: error.message });
   }
 };
+
+export const updateUserGoal = async (req, res) => {
+  try {
+    const { goal } = req.body;
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.goal = goal;
+    await user.save();  
+
+    res.json({ message: 'User goal updated successfully', user });
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating user goal', error: error.message });
+  }
+};
+
+      

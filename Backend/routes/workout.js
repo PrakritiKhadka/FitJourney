@@ -28,9 +28,9 @@ router.put('/:id', updateWorkout);
 router.delete('/:id', deleteWorkout);
 
 // POST: Use an admin workout
-router.post('/admin/:id/use', useAdminWorkout);
+// router.post('/admin/:id/use', useAdminWorkout);
 
 // GET: Get workout statistics (admin only)
-router.get('/stats', getWorkoutStats);
+// router.get('/stats', getWorkoutStats);
 
 export default router;

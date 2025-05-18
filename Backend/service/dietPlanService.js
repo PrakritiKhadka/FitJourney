@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import DietPlan from "../models/dietPlan.js";
 import User from "../models/user.model.js";
 
@@ -253,6 +254,30 @@ export const getDietPlanStats = async (req, res) => {
     });
   } catch (error) {
     res.status(400).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+export const getSubscribedDietPlanById = async (req, res) => {
+  try {
+    const userId = new mongoose.Types.ObjectId(req.user._id); // Explicitly convert
+    const dietPlan = await DietPlan.findOne({ subscribers: userId });
+
+    if (!dietPlan) {
+      return res.status(404).json({
+        success: false,
+        message: 'No subscribed diet plan found for this user',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: dietPlan,
+    });
+  } catch (error) {
+    res.status(500).json({
       success: false,
       error: error.message,
     });

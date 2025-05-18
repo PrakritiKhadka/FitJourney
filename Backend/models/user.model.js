@@ -38,6 +38,10 @@ const UserSchema = new Schema({
     type: Date,
     default: Date.now,
   },
+  goal: {
+    type: Number,
+    required: false,
+  },
 });
 
 const User = mongoose.model('User', UserSchema);
