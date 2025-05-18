@@ -5,6 +5,8 @@ import useUserStore from "../store/user";
 import { Eye, Plus, Calendar, Clock, Repeat, Bell, Trash2 } from "lucide-react";
 import WorkoutForm from "./WorkoutForm";
 import { showErrorToast, showSuccessToast } from "../toastutil";
+import BlogPreview from "../components/BlogPreview";
+import BlogList from "./BlogList";
 
 const FitJourneyDashboard = () => {
   const navigate = useNavigate();
@@ -37,7 +39,7 @@ const FitJourneyDashboard = () => {
   const [selectedWorkout, setSelectedWorkout] = useState(null);
   const [showWorkoutModal, setShowWorkoutModal] = useState(false);
   const [showCreateWorkoutModal, setShowCreateWorkoutModal] = useState(false);
-  const [activeDietTab, setActiveDietTab] = useState("subscribed");
+  const [activeDietTab, setActiveDietTab] = useState("today");
   const [showDietPlanModal, setShowDietPlanModal] = useState(false);
   const [selectedDietPlan, setSelectedDietPlan] = useState(null);
   const [showSubscribeConfirm, setShowSubscribeConfirm] = useState(false);
@@ -296,6 +298,11 @@ const FitJourneyDashboard = () => {
     }
   };
 
+  const getDayName = () => {
+    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    return days[new Date().getDay()];
+  };
+
   const renderTabContent = () => {
     switch (activeTab) {
       case "dashboard":
@@ -329,159 +336,213 @@ const FitJourneyDashboard = () => {
 
             <div className="diet-plan-section">
               <div className="diet-plan-header">
-                <h2>Diet Plans</h2>
+                <h2>Your Activity Detail</h2>
                 <div className="diet-plan-tabs">
                   <button
                     className={`tab-button ${
-                      activeDietTab === "subscribed" ? "active" : ""
+                      activeDietTab === "today" ? "active" : ""
                     }`}
-                    onClick={() => setActiveDietTab("subscribed")}
+                    onClick={() => setActiveDietTab("today")}
                   >
-                    Your Diet Plan
+                    For Today
                   </button>
                   <button
                     className={`tab-button ${
-                      activeDietTab === "recommended" ? "active" : ""
+                      activeDietTab === "weekly" ? "active" : ""
                     }`}
-                    onClick={() => setActiveDietTab("recommended")}
+                    onClick={() => setActiveDietTab("weekly")}
                   >
-                    Recommended Plans
+                    This Week
                   </button>
                 </div>
               </div>
 
               <div className="diet-plan-content">
-                {activeDietTab === "subscribed" ? (
-                  <div className="table-container">
-                    <table className="diet-table">
-                      <thead>
-                        <tr>
-                          <th>Name</th>
-                          <th>Category</th>
-                          <th>Daily Calories</th>
-                          <th>Meals Per Day</th>
-                          <th>Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {subscribedDietPlan ? (
-                          <tr>
-                            <td>{subscribedDietPlan.name}</td>
-                            <td>
-                              <span
-                                className={`category-badge ${getCategoryColor(
-                                  subscribedDietPlan.category
-                                )}`}
-                              >
-                                {subscribedDietPlan.category}
-                              </span>
-                            </td>
-                            <td>{subscribedDietPlan.dailyCalories} kcal</td>
-                            <td>{subscribedDietPlan.mealsPerDay}</td>
-                            <td>
-                              <button
-                                className="btn-icon"
-                                onClick={() => {
-                                  setSelectedDietPlan(subscribedDietPlan);
-                                  setShowDietPlanModal(true);
-                                }}
-                                title="View Details"
-                              >
-                                <Eye size={16} />
-                              </button>
-                            </td>
-                          </tr>
+                {activeDietTab === "today" ? (
+                  <div className="daily-content">
+                    <div className="daily-section">
+                      <h3>Today's Diet Plan</h3>
+                      {subscribedDietPlan ? (
+                        subscribedDietPlan.data.dailyDetails[getDayName()]?.meals?.length > 0 ? (
+                          <div className="diet-cards">
+                            {subscribedDietPlan.data.dailyDetails[getDayName()].meals.map((meal, index) => (
+                              <div key={index} className="meal-card">
+                                <div className="meal-header">
+                                  <span className="meal-name">{meal.name}</span>
+                                  <span className="meal-time">{meal.time}</span>
+                                </div>
+                                <p className="meal-description">{meal.description}</p>
+                                <span className="meal-calories">{meal.calories} kcal</span>
+                              </div>
+                            ))}
+                          </div>
                         ) : (
-                          <tr>
-                            <td colSpan="5" className="empty-message">
-                              No diet plan subscribed yet
-                            </td>
-                          </tr>
+                          <div className="compact-message">
+                            <p>No meals scheduled for today</p>
+                          </div>
+                        )
+                      ) : (
+                        <div className="compact-message">
+                          <p>No diet plan subscribed</p>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="daily-section">
+                      <h3>Today's Workouts</h3>
+                      <div className="workout-cards">
+                        {subscribedWorkouts?.data?.length > 0 ? (
+                          subscribedWorkouts.data
+                            .filter(workout => {
+                              if (workout.isRecurring && workout.recurringDays) {
+                                return workout.recurringDays.includes(getDayName());
+                              }
+                              return false;
+                            })
+                            .length > 0 ? (
+                            subscribedWorkouts.data
+                              .filter(workout => {
+                                if (workout.isRecurring && workout.recurringDays) {
+                                  return workout.recurringDays.includes(getDayName());
+                                }
+                                return false;
+                              })
+                              .map((workout, index) => (
+                                <div key={index} className="workout-card">
+                                  <div className="workout-header">
+                                    <h4>{workout.name}</h4>
+                                    <span className={`intensity-badge ${workout.intensityLevel.toLowerCase()}`}>
+                                      {workout.intensityLevel}
+                                    </span>
+                                  </div>
+                                  <div className="workout-details">
+                                    <span><Clock size={16} /> {workout.duration} min</span>
+                                    <span>{workout.workoutType}</span>
+                                  </div>
+                                  {workout.scheduledTime && (
+                                    <div className="workout-time">
+                                      <Clock size={16} /> {workout.scheduledTime}
+                                    </div>
+                                  )}
+                                </div>
+                              ))
+                          ) : (
+                            <div className="compact-message">
+                              <p>No workouts scheduled for today</p>
+                            </div>
+                          )
+                        ) : (
+                          <div className="compact-message">
+                            <p>No workouts subscribed</p>
+                          </div>
                         )}
-                      </tbody>
-                    </table>
+                      </div>
+                    </div>
                   </div>
                 ) : (
-                  <div className="table-container">
-                    <table className="diet-table">
-                      <thead>
-                        <tr>
-                          <th>Name</th>
-                          <th>Category</th>
-                          <th>Daily Calories</th>
-                          <th>Meals Per Day</th>
-                          <th>Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {recommendedDietPlans.map((plan) => (
-                          <tr key={plan._id}>
-                            <td>{plan.name}</td>
-                            <td>
-                              <span
-                                className={`category-badge ${getCategoryColor(
-                                  plan.category
-                                )}`}
-                              >
-                                {plan.category}
-                              </span>
-                            </td>
-                            <td>{plan.dailyCalories} kcal</td>
-                            <td>{plan.mealsPerDay}</td>
-                            <td>
-                              <div className="table-actions">
-                                <button
-                                  className="btn-icon"
-                                  onClick={() => {
-                                    setSelectedDietPlan(plan);
-                                    setShowDietPlanModal(true);
-                                  }}
-                                  title="View Details"
-                                >
-                                  <Eye size={16} />
-                                </button>
-                                <button
-                                  className="btn-icon subscribe"
-                                  onClick={() =>
-                                    handleSubscribeDietPlan(plan._id)
+                  <div className="weekly-content">
+                    {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => (
+                      <div key={day} className="day-section">
+                        <h3>{day.charAt(0).toUpperCase() + day.slice(1)}</h3>
+                        
+                        <div className="daily-section">
+                          <h4>Diet Plan</h4>
+                          {subscribedDietPlan && (
+                            <div className="diet-cards">
+                              {subscribedDietPlan.data.dailyDetails[day]?.meals?.map((meal, index) => (
+                                <div key={index} className="meal-card">
+                                  <div className="meal-header">
+                                    <span className="meal-name">{meal.name}</span>
+                                    <span className="meal-time">{meal.time}</span>
+                                  </div>
+                                  <p className="meal-description">{meal.description}</p>
+                                  <span className="meal-calories">{meal.calories} kcal</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="daily-section">
+                          <h4>Workouts</h4>
+                          <div className="workout-cards">
+                            {subscribedWorkouts?.data?.length > 0 ? (
+                              subscribedWorkouts.data
+                                .filter(workout => {
+                                  if (workout.isRecurring && workout.recurringDays) {
+                                    return workout.recurringDays.includes(day);
                                   }
-                                  title="Subscribe"
-                                >
-                                  <Plus size={16} />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                                  return false;
+                                })
+                                .map((workout, index) => (
+                                  <div key={index} className="workout-card">
+                                    <div className="workout-header">
+                                      <h4>{workout.name}</h4>
+                                      <span className={`intensity-badge ${workout.intensityLevel.toLowerCase()}`}>
+                                        {workout.intensityLevel}
+                                      </span>
+                                    </div>
+                                    <div className="workout-details">
+                                      <span><Clock size={16} /> {workout.duration} min</span>
+                                      <span>{workout.workoutType}</span>
+                                    </div>
+                                    {workout.scheduledTime && (
+                                      <div className="workout-time">
+                                        <Clock size={16} /> {workout.scheduledTime}
+                                      </div>
+                                    )}
+                                  </div>
+                                ))
+                            ) : (
+                              <div className="no-workouts">No workouts scheduled for {day}</div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
-            </div>
 
-            <div className="recommended-blogs">
-              <h2>Recommended Blogs</h2>
-              <div className="blogs-grid">
-                {recommendedBlogs.map((blog) => (
-                  <div key={blog._id} className="blog-card">
-                    <img
-                      src={blog.coverImage}
-                      alt={blog.title}
-                      className="blog-image"
-                    />
-                    <div className="blog-content">
-                      <h3>{blog.title}</h3>
-                      <p>{blog.excerpt}</p>
-                      <button
-                        className="btn btn-secondary"
-                        onClick={() => navigate(`/blog/${blog._id}`)}
-                      >
-                        Read More
-                      </button>
+              <div className="recommended-blogs">
+              <div className="section-header">
+                  <h2>Recommended Blogs</h2>
+                  <button className="view-all-btn" onClick={() => navigate('/blog')}>
+                    View All
+                  </button>
+                </div>
+                {recommendedBlogs.length > 0 ? (
+                    <div className="blogs-grid">
+                      {recommendedBlogs.slice(0, 3).map((blog) => (
+                        <div key={blog._id} className="blog-preview-card">
+                          <div className="blog-preview-image">
+                            <img
+                              src={blog.coverImage || '/default-blog-image.jpg'}
+                              alt={blog.title}
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = '/default-blog-image.jpg';
+                              }}
+                            />
+                          </div>
+                          <div className="blog-preview-content">
+                            <h3>{blog.title}</h3>
+                            <p>{blog.excerpt?.substring(0, 60)}...</p>
+                            <button
+                              className="read-more-btn"
+                              onClick={() => navigate(`/blog/${blog._id}`)}
+                            >
+                              Read More
+                            </button>
+                          </div>
+                        </div>
+                      ))}
                     </div>
+                ) : (
+                  <div className="compact-message">
+                    <p>No recommended blogs available</p>
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </div>

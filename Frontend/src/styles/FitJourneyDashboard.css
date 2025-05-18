@@ -682,84 +682,133 @@
     }
   }
 
-  /* Blogs Section */
+  /* Blog Section Styles */
   .recommended-blogs {
-    margin-bottom: 3rem;
+    margin-top: 3rem;
+    padding: 2rem;
+    background: #ffffff;
+    border-radius: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
   .recommended-blogs h2 {
     font-size: 1.5rem;
     color: #1a1a1a;
     margin-bottom: 1.5rem;
+    text-align: center;
+  }
+
+  .blogs-carousel {
+    position: relative;
+    padding: 1rem 0;
   }
 
   .blogs-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 1.5rem;
+    padding: 1rem;
   }
 
   .blog-card {
     background: #ffffff;
-    border-radius: 0.75rem;
+    border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
   }
 
   .blog-card:hover {
     transform: translateY(-5px);
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .blog-image-container {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
   }
 
   .blog-image {
     width: 100%;
-    height: 200px;
+    height: 100%;
     object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .blog-card:hover .blog-image {
+    transform: scale(1.05);
   }
 
   .blog-content {
     padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
   }
 
   .blog-content h3 {
     color: #1a1a1a;
-    margin-bottom: 0.75rem;
     font-size: 1.25rem;
+    margin-bottom: 1rem;
+    line-height: 1.4;
+    font-weight: 600;
   }
 
   .blog-content p {
     color: #4b5563;
-    margin-bottom: 1rem;
-    font-size: 0.875rem;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    flex-grow: 1;
   }
 
-  /* Buttons */
-  .btn {
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: none;
+  .blog-content .btn {
+    align-self: flex-start;
+    margin-top: auto;
   }
 
-  .btn-primary {
-    background: #00e676;
-    color: #1a1a1a;
-  }
-
-  .btn-primary:hover {
-    background: #00b248;
-  }
-
-  .btn-secondary {
+  /* No Data Message Styles */
+  .no-data-message {
+    text-align: center;
+    padding: 3rem 2rem;
     background: #f8fafc;
-    color: #1a1a1a;
-    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    margin: 1rem 0;
   }
 
-  .btn-secondary:hover {
-    background: #e5e7eb;
+  .no-data-message p {
+    color: #4b5563;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .no-data-message .sub-text {
+    color: #6b7280;
+    font-size: 0.9rem;
+  }
+
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .blogs-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .blog-image-container {
+      height: 180px;
+    }
+
+    .blog-content {
+      padding: 1.25rem;
+    }
+
+    .blog-content h3 {
+      font-size: 1.1rem;
+    }
   }
 
   /* Loading and Error States */
@@ -1295,5 +1344,186 @@
     .exercise-details {
       flex-direction: column;
       gap: 0.5rem;
+    }
+  }
+
+  /* Daily and Weekly Content Styles */
+  .daily-content, .weekly-content {
+    padding: 1rem;
+  }
+
+  .daily-section {
+    margin-bottom: 2rem;
+  }
+
+  .daily-section h3 {
+    color: #333;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+  }
+
+  .diet-cards, .workout-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+  }
+
+  .meal-card, .workout-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+  }
+
+  .meal-card:hover, .workout-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .meal-header, .workout-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .meal-name, .workout-header h4 {
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+  }
+
+  .meal-time {
+    color: #666;
+    font-size: 0.9rem;
+  }
+
+  .meal-description {
+    color: #666;
+    font-size: 0.9rem;
+    margin: 0.5rem 0;
+  }
+
+  .meal-calories {
+    display: block;
+    color: #e74c3c;
+    font-weight: 500;
+    font-size: 0.9rem;
+  }
+
+  .workout-details {
+    display: flex;
+    gap: 1rem;
+    color: #666;
+    font-size: 0.9rem;
+    margin: 0.5rem 0;
+  }
+
+  .workout-time {
+    color: #666;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  /* Weekly View Styles */
+  .weekly-content .day-section {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+  }
+
+  .weekly-content .day-section h3 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e9ecef;
+  }
+
+  .weekly-content .daily-section h4 {
+    color: #666;
+    margin: 1rem 0;
+    font-size: 1rem;
+  }
+
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .diet-cards, .workout-cards {
+      grid-template-columns: 1fr;
+    }
+    
+    .weekly-content .day-section {
+      padding: 0.5rem;
+    }
+  }
+
+  .no-workouts {
+    text-align: center;
+    padding: 2rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    color: #666;
+    font-size: 0.9rem;
+    grid-column: 1 / -1;
+  }
+
+  /* Compact Card Styles */
+  .compact-card {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .compact-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .compact-card p {
+    margin: 0;
+    color: #4b5563;
+  }
+
+  .compact-card .sub-text {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: #6b7280;
+  }
+
+  /* Blog Section Updates */
+  .recommended-blogs {
+    margin-top: 3rem;
+    padding: 2rem;
+    background: #ffffff;
+    border-radius: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .blogs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    padding: 1rem;
+  }
+
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .compact-card {
+      padding: 1rem;
+    }
+
+    .blogs-grid {
+      grid-template-columns: 1fr;
     }
   }
