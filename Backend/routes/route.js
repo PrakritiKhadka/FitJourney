@@ -1,7 +1,7 @@
 import express from 'express';
 import {verifyLogin} from "../middleware/authMiddleware.js"
 import { createOrUpdateProfile, getProfile } from "../service/profileService.js";
-import { getUser, updateUser, getAllUsers, updateUserByAdmin, deleteUserByAdmin } from "../service/userService.js";
+import { getUser, updateUser, getAllUsers, updateUserByAdmin, deleteUserByAdmin, updateUserGoal } from "../service/userService.js";
 import { createGoal, deleteGoal, getGoals, updateGoal } from "../service/goalService.js";
 import { login, signUpWithEmail, signupWithGoogle } from '../service/authService.js';
 import { createWorkout, deleteWorkout, getAdminWorkouts, getSubscribedWorkouts, getWorkouts, getWorkoutSummaryStats, useAdminWorkout } from "../service/workoutService.js";
@@ -39,6 +39,7 @@ router.get('/users/me', verifyLogin, getUser);
 router.put('/users/me', verifyLogin, updateUser); // Updated to use the new controller function
 router.put('/users/profile', verifyLogin, createOrUpdateProfile); // Keep this for fitness profile data
 router.delete('/users/delete');
+router.put('/users/goal', verifyLogin, updateUserGoal);
 
 // Admin User Management Routes
 router.get('/admin/users', verifyLogin, getAllUsers);
@@ -79,11 +80,12 @@ router.patch('/blogs/:id/publish', verifyLogin, togglePublish);
 router.get('/diet-plans/stats',verifyLogin, getDietPlanStats);
 router.post('/diet-plans', verifyLogin, createDietPlan);
 router.get('/diet-plans', verifyLogin, getDietPlans);
+router.get('/diet-plans/user', verifyLogin, getSubscribedDietPlanById);
 router.get('/diet-plans/:id', verifyLogin, getDietPlanById);
 router.put('/diet-plans/:id',verifyLogin, updateDietPlan);
 router.delete('/diet-plans/:id', verifyLogin, deleteDietPlan);
 router.post('/diet-plans/:id/subscribe', verifyLogin, subscribeToDietPlan);
 router.post('/diet-plans/:id/unsubscribe', verifyLogin, unsubscribeFromDietPlan);
-router.get('/diet-plans/user/:id', verifyLogin, getSubscribedDietPlanById);
+
 
 export default router;

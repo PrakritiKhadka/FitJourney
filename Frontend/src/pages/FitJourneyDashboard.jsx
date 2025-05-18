@@ -139,7 +139,7 @@ const FitJourneyDashboard = () => {
     setIsLoading(true);
     try {
       // Fetch subscribed diet plan
-      const dietPlanResponse = await fetch("/api/diet-plans", {
+      const dietPlanResponse = await fetch("/api/diet-plans/user" , {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -211,6 +211,18 @@ const FitJourneyDashboard = () => {
     e.preventDefault();
     try {
       // Implement goal submission logic
+      const response = await fetch("/api/users/goal", {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ goal: formData.goal }),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to set goal");
+      }
+      setShowGoalForm(false);
+      showSuccessToast("Goal set successfully!");
     } catch (err) {
       showErrorToast("Failed to set goal");
     }
@@ -774,16 +786,17 @@ const FitJourneyDashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {subscribedDietPlan.data.map((d) => (
-                      <tr key={d._id}>
-                        <td>{d.name}</td>
-                        <td>{d.category}</td>
-                        <td>{d.dailyCalories}</td>
-                        <td>{d.mealsPerDay}</td>
+                    {
+                      subscribedDietPlan &&  ( 
+                      <tr key={subscribedDietPlan.data._id}>
+                        <td>{subscribedDietPlan.data.name}</td>
+                        <td>{subscribedDietPlan.data.category}</td>
+                        <td>{subscribedDietPlan.data.dailyCalories}</td>
+                        <td>{subscribedDietPlan.data.mealsPerDay}</td>
                         <td>
                           <button
                             className="btn-icon"
-                            onClick={() => navigate(`/blog/${d.blogLink}`)}
+                            onClick={() => navigate(`/blog/${subscribedDietPlan.data.blogLink}`)}
                             title="View Blog"
                           >
                             View Blog
@@ -794,7 +807,7 @@ const FitJourneyDashboard = () => {
                             <button
                               className="btn-icon"
                               onClick={() => {
-                                setSelectedDietPlan(d);
+                                setSelectedDietPlan(subscribedDietPlan.data);
                                 setShowDietPlanModal(true);
                               }}
                               title="View Details"
@@ -804,7 +817,7 @@ const FitJourneyDashboard = () => {
                           </div>
                         </td>
                       </tr>
-                    ))}
+                    )}
                   </tbody>
                 </table>
               </div>

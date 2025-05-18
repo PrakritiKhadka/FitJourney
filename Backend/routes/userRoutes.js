@@ -2,9 +2,6 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
 const User = require('../models/User');
-const Workout = require('../models/Workout');
-const DietPlan = require('../models/DietPlan');
-const Blog = require('../models/Blog');
 
 // Get user stats
 router.get('/stats', auth, async (req, res) => {
