@@ -96,6 +96,14 @@ export const getSubscribedWorkouts = async (req, res) => {
   }
 };
 
+export const getNormalWorkouts = async (req, res) => {
+  try {
+    const workouts = await Workout.find({ isAdminWorkout: false, isReUsed: false });
+    res.status(200).json({ success: true, data: workouts });
+  } catch (err) {
+    console.error('Error fetching normal workouts:', err);
+  }
+};
 export const getWorkouts = async (req, res) => {
   try {
     const userId = req.user ? req.user._id : null;
@@ -360,7 +368,7 @@ export const getWorkoutSummaryStats = async (req, res) => {
     const totalDurationCompleted = completedWorkouts.reduce((sum, w) => sum + (w.duration || 0), 0);
     const totalUsage = totalCompleted;
 
-    const userCreatedWorkouts = workouts.filter(w => w.isAdminWorkout == false);
+    const userCreatedWorkouts = workouts.filter(w => w.isAdminWorkout == false && w.isReUsed==false);
     const totalUserCreatedWorkouts = userCreatedWorkouts.length;
     const userCompletedWorkouts = userCreatedWorkouts.filter(w => w.completionStatus === 'completed');
     const totalUserCompletedWorkouts = userCompletedWorkouts.length;

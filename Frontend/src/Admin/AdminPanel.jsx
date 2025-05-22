@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import useUserStore from '../store/user';
 import './AdminPanel.css';
 import {
@@ -11,10 +11,13 @@ import {
   FileText
 } from 'lucide-react';
 
+
 function AdminPanel() {
+  const navigate = useNavigate();
+
   const handleLogout = () => {
-    // Add actual logout logic here
-    // After logout, you can redirect using the Link component or navigate
+    localStorage.removeItem('token');
+    navigate('/');
   };
   const { isAuthenticated, logout, user, error, clearError, checkAuth } =
     useUserStore();
@@ -36,10 +39,10 @@ function AdminPanel() {
       
       {/* Center Squares */}
       <div className="squares-container">
-        <Link to="/AdminDashboard" className="square">
+        {/* <Link to="/AdminDashboard" className="square">
           <Gauge className="square-icon" size={32} />
           <h3>Dashboard</h3>
-        </Link>
+        </Link> */}
         <Link to="/AdminUserManagement" className="square">
           <Users className="square-icon" size={32} />
           <h3>User Management</h3>

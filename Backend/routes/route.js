@@ -4,7 +4,7 @@ import { createOrUpdateProfile, getProfile } from "../service/profileService.js"
 import { getUser, updateUser, getAllUsers, updateUserByAdmin, deleteUserByAdmin, updateUserGoal } from "../service/userService.js";
 import { createGoal, deleteGoal, getGoals, updateGoal } from "../service/goalService.js";
 import { login, signUpWithEmail, signupWithGoogle } from '../service/authService.js';
-import { createWorkout, deleteWorkout, getAdminWorkouts, getSubscribedWorkouts, getWorkouts, getWorkoutSummaryStats, useAdminWorkout } from "../service/workoutService.js";
+import { createWorkout, deleteWorkout, getAdminWorkouts, getNormalWorkouts, getSubscribedWorkouts, getWorkouts, getWorkoutSummaryStats, useAdminWorkout } from "../service/workoutService.js";
 import { 
   getBlogs, 
   getPublishedBlogs, 
@@ -61,6 +61,7 @@ router.delete('/goals/:id', verifyLogin, deleteGoal);
 // Routes for Workout
 router.post('/workouts', verifyLogin, createWorkout);
 router.get('/workouts', verifyLogin, getWorkouts);
+router.get('/allworkouts', getNormalWorkouts);
 router.get('/workouts/stats', verifyLogin, getWorkoutSummaryStats);
 router.get('/workouts/admin', verifyLogin, getAdminWorkouts);
 router.get('/workouts/subscribed', verifyLogin, getSubscribedWorkouts);

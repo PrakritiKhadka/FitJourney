@@ -80,7 +80,7 @@
   }
   
   .intro-section h2, 
-  .workouts-section h2, 
+  .workout-section h2, 
   .vlogs-section h2, 
   .join-section h2 {
     font-size: 2rem;
@@ -91,7 +91,7 @@
   }
   
   .intro-section h2::after,
-  .workouts-section h2::after,
+  .workout-section h2::after,
   .vlogs-section h2::after {
     content: "";
     position: absolute;
@@ -117,32 +117,32 @@
   }
   
   .stat-card {
-    background-color: var(--card-bg);
+    background-color: white;
     padding: 25px 20px;
     border-radius: 10px;
     text-align: center;
-    box-shadow: 0 5px 15px var(--shadow);
-    border: 1px solid var(--border-color);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e6e6e6;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .stat-label {
+    color: #6c757d;
+    font-size: 1.1rem;
+    margin-bottom: 10px;
   }
   
   .stat-number {
     font-size: 2.5rem;
     font-weight: 700;
-    color: var(--primary);
-    margin-bottom: 10px;
-  }
-  
-  .stat-label {
-    color: var(--medium-text);
-    font-size: 1rem;
+    color: #ff4757;
+    line-height: 1;
   }
   
   .activity-indicator {
-    height: 6px;
-    background-color: var(--darker-bg);
-    border-radius: 3px;
-    margin: 15px 0 5px;
-    overflow: hidden;
+    display: none;
   }
   
   .activity-bar {
@@ -152,69 +152,165 @@
   }
   
   /* Workouts Section */
-  .workouts-section {
+  .workout-section {
     margin-bottom: 60px;
     background-color: var(--dark-bg);
     border-radius: 10px;
     padding: 30px;
-    box-shadow: 0 5px 15px var(--shadow);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
   }
   
-  .workouts-section > p,
-  .vlogs-section > p {
+  .workout-section h2 {
+    font-size: 1.8rem;
+    color: var(--light-text);
+    margin-bottom: 10px;
+    position: relative;
+    padding-bottom: 15px;
+  }
+  
+  .workout-section h2::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100px;
+    height: 3px;
+    background-color: var(--medium-text);
+  }
+  
+  .workout-section > p {
     color: var(--medium-text);
-    margin-bottom: 30px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+  }
+  
+  .workout-card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-top: 20px;
   }
   
   .workout-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 30px;
-    margin-top: 30px;
-  }
-  
-  .workout-card {
     background-color: var(--card-bg);
-    border-radius: 10px;
-    box-shadow: 0 5px 15px var(--shadow);
-    padding: 25px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border-top: 4px solid var(--secondary);
-    border-left: 1px solid var(--border-color);
-    border-right: 1px solid var(--border-color);
-    border-bottom: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    padding: 15px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid var(--border-color);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    max-width: 100%;
+    color: var(--dark-bg);
   }
   
-  .workout-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-    border-top-color: var(--primary);
+  .workout-cards:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    border-color: var(--primary);
+    color: var(--dark-bg);
   }
   
-  .workout-card h3 {
-    font-size: 1.5rem;
-    margin-bottom: 15px;
-    color: var(--light-text);
+  .workout-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
   }
   
-  .workout-card p {
+  .workout-header h3 {
+    font-size: 1rem;
+    margin: 0;
+    color: var(--primary);
+    font-weight: 600;
+  }
+  
+  .intensity-badge {
+    padding: 2px 6px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: capitalize;
+    background-color: var(--darker-bg);
     color: var(--medium-text);
+  }
+  
+  .intensity-badge.beginner {
+    color: #4dabf7;
+  }
+  
+  .intensity-badge.intermediate {
+    color: #ffa94d;
+  }
+  
+  .intensity-badge.advanced {
+    color: #ff6b6b;
+  }
+  
+  .workout-description {
+    color: var(--light-text);
+    font-size: 0.8rem;
+    line-height: 1.4;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+    flex-grow: 1;
+    opacity: 0.9;
   }
   
   .workout-details {
     display: flex;
-    justify-content: space-between;
-    margin: 15px 0;
-    font-size: 0.9rem;
+    gap: 8px;
+    margin-bottom: 8px;
     color: var(--medium-text);
-    border-top: 1px solid var(--border-color);
-    padding-top: 15px;
+    font-size: 0.75rem;
+    justify-content: space-between;
   }
   
-  .level, .duration {
-    padding: 5px 10px;
+  .detail-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--medium-text);
+  }
+  
+  .exercises-preview {
     background-color: var(--darker-bg);
-    border-radius: 20px;
+    border-radius: 6px;
+    padding: 8px;
+    margin-top: 8px;
+  }
+  
+  .exercises-preview h4 {
+    margin-top: 0;
+    margin-bottom: 6px;
+    font-size: 0.8rem;
+    color: var(--light-text);
+  }
+  
+  .exercises-preview ul {
+    margin: 0;
+    padding-left: 15px;
+    color: var(--medium-text);
+  }
+  
+  .exercises-preview li {
+    margin-bottom: 2px;
+    font-size: 0.75rem;
+  }
+  
+  .loading-message, .error-message, .no-workouts-message {
+    text-align: center;
+    padding: 20px;
+    color: var(--medium-text);
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+  }
+  
+  .error-message {
+    color: var(--primary);
   }
   
   /* Vlogs Section */
@@ -341,4 +437,148 @@
     .tagline {
       font-size: 1.2rem;
     }
+    
+    .workout-card-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .workout-cards { 
+      max-width: 100%;
+      color: var(--dark-bg);
+    }
+  }
+
+  /* Add these new styles for the featured workouts section */
+
+  .featured-workout-section {
+    margin: 2rem 0;
+  }
+
+  /* .workout-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 30px;
+    margin-top: 30px;
+  } */
+
+  .workout-cards {
+    border-radius: 10px;
+    box-shadow: 0 5px 15px var(--shadow);
+    padding: 25px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-top: 4px solid var(--secondary);
+    border-left: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    color: var(--dark-bg);
+
+  }
+
+  .workout-cards:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    border-top-color: var(--primary);
+    color: var(--dark-bg);
+  }
+
+  .workout-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+
+  .workout-header h3 {
+    font-size: 1.3rem;
+    margin: 0;
+    color: var(--primary);
+  }
+
+  .intensity-badge {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: capitalize;
+    background-color: var(--darker-bg);
+    color: var(--medium-text);
+  }
+
+  .intensity-badge.beginner {
+    color: #4dabf7;
+  }
+
+  .intensity-badge.intermediate {
+    color: #ffa94d;
+  }
+
+  .intensity-badge.advanced {
+    color: #ff6b6b;
+  }
+
+  .workout-details {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+    color: var(--medium-text);
+    font-size: 0.9rem;
+  }
+
+  .detail-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--medium-text);
+  }
+
+  .workout-description {
+    color: var(--light-text);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 15px;
+    opacity: 0.9;
+  }
+
+  .exercises-preview {
+    background-color: var(--darker-bg);
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 15px;
+    border: 1px solid var(--border-color);
+  }
+
+  .exercises-preview h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1rem;
+    color: var(--light-text);
+  }
+
+  .exercises-preview ul {
+    margin: 0;
+    padding-left: 20px;
+    color: var(--medium-text);
+  }
+
+  .exercises-preview li {
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+  }
+
+  .loading-message, .error-message, .no-workouts-message {
+    text-align: center;
+    padding: 25px;
+    color: var(--medium-text);
+    background-color: var(--card-bg);
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+  }
+
+  .error-message {
+    color: var(--primary);
+  }
+
+  /* Make sure these styles don't interfere with existing styles */
+  .vlogs-section-description {
+    color: var(--light-text);
   }
