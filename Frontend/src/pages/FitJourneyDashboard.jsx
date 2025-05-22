@@ -717,6 +717,7 @@ const FitJourneyDashboard = () => {
                       <th>Type</th>
                       <th>Duration</th>
                       <th>Intensity</th>
+                      <th>Calories Burn</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -733,6 +734,7 @@ const FitJourneyDashboard = () => {
                             {workout.intensityLevel}
                           </span>
                         </td>
+                        <td>{workout.caloriesBurn} cal</td>
                         <td>
                           <div className="table-actions">
                             <button
@@ -770,7 +772,8 @@ const FitJourneyDashboard = () => {
                       <th>Name</th>
                       <th>Type</th>
                       <th>Duration</th>
-                      <th>Intensity</th>
+                      <th>Intensity</th>  
+                      <th>Calories Burn</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -787,6 +790,7 @@ const FitJourneyDashboard = () => {
                             {workout.intensityLevel}
                           </span>
                         </td>
+                        <td>{workout.caloriesBurn} cal</td>
                         <td>
                           <div className="table-actions">
                             <button
