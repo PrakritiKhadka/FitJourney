@@ -43,6 +43,7 @@ const FooterHandler = () => {
     "/WorkoutManagement",
     "/AdminUserManagement",
     "/DietPlanManagement",
+    "/BlogManagement",
   ];
 
   return (
@@ -60,6 +61,7 @@ const NavbarHandler = () => {
     "/WorkoutManagement",
     "/AdminUserManagement",
     "/DietPlanManagement",
+    "/BlogManagement",
   ];
 
   return (

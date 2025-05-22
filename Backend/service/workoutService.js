@@ -26,11 +26,12 @@ export const createWorkout = async (req, res) => {
       recurringDays, 
       reminderEnabled, 
       reminderTime,
-      isAdminWorkout
+      isAdminWorkout,
+      caloriesBurn
         } = req.body;
     
     // Validate required fields
-    if (!name || !workoutType || !duration || !intensityLevel || !date || !time) {
+    if (!name || !workoutType || !duration || !intensityLevel || !date || !time || !caloriesBurn) {
       return res.status(400).json({ 
         success: false, 
         error: 'Required fields are missing' 
@@ -59,7 +60,8 @@ export const createWorkout = async (req, res) => {
       reminderEnabled,
       reminderTime: reminderTime || 30,
       isAdminWorkout: isAdminWorkout,
-      isReUsed: false
+      isReUsed: false,
+      caloriesBurn: Number(caloriesBurn)
     });
 
     const savedWorkout = await newWorkout.save();
@@ -96,6 +98,14 @@ export const getSubscribedWorkouts = async (req, res) => {
   }
 };
 
+export const getNormalWorkouts = async (req, res) => {
+  try {
+    const workouts = await Workout.find({ isAdminWorkout: false, isReUsed: false });
+    res.status(200).json({ success: true, data: workouts });
+  } catch (err) {
+    console.error('Error fetching normal workouts:', err);
+  }
+};
 export const getWorkouts = async (req, res) => {
   try {
     const userId = req.user ? req.user._id : null;
@@ -360,7 +370,7 @@ export const getWorkoutSummaryStats = async (req, res) => {
     const totalDurationCompleted = completedWorkouts.reduce((sum, w) => sum + (w.duration || 0), 0);
     const totalUsage = totalCompleted;
 
-    const userCreatedWorkouts = workouts.filter(w => w.isAdminWorkout == false);
+    const userCreatedWorkouts = workouts.filter(w => w.isAdminWorkout == false && w.isReUsed==false);
     const totalUserCreatedWorkouts = userCreatedWorkouts.length;
     const userCompletedWorkouts = userCreatedWorkouts.filter(w => w.completionStatus === 'completed');
     const totalUserCompletedWorkouts = userCompletedWorkouts.length;
@@ -396,6 +406,39 @@ export const getWorkoutSummaryStats = async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to fetch workout summary stats: ' + err.message
+    });
+  }
+};
+
+export const markUnmarkCompleted = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { completedStatus } = req.body;
+
+    const workout = await Workout.findById(id);
+    if (!workout) {
+      return res.status(404).json({
+        success: false,
+        error: 'Workout not found'
+      });
+    }
+
+    if (completedStatus) {
+      workout.completedCount += 1;
+    } else {
+      workout.completedCount -= 1;
+    }
+    await workout.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Workout completion status updated successfully'
+    });
+  } catch (err) {
+    console.error('Error marking/unmarking workout as completed:', err);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to mark/unmark workout as completed: ' + err.message
     });
   }
 };

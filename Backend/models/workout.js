@@ -98,6 +98,14 @@ const WorkoutSchema = new Schema({
   updatedAt: {
     type: Date,
     default: Date.now
+  },
+  completedCount: {
+    type: Number,
+    default: 0
+  },
+  caloriesBurn: {
+    type: Number,
+    default: 0
   }
 });
 

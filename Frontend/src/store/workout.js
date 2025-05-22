@@ -10,7 +10,8 @@ const useWorkoutStore = create((set, get) => ({
     intensityLevel: 'medium',
     date: new Date().toISOString().substr(0, 10),
     time: '',
-    notes: ''
+    notes: '',
+    caloriesBurn: ''
   },
   
   setField: (name, value) => 
@@ -18,6 +19,7 @@ const useWorkoutStore = create((set, get) => ({
       formData: {
         ...state.formData,
         [name]: name === 'duration' ? parseInt(value, 10) || 0 : value,
+        [name]: name === 'caloriesBurn' ? parseInt(value, 10) || 0 : value,
       },
     })),
   
@@ -29,7 +31,8 @@ const useWorkoutStore = create((set, get) => ({
         intensityLevel: 'medium',
         date: new Date().toISOString().substr(0, 10),
         time: '',
-        notes: ''
+        notes: '',
+        caloriesBurn: ''
       }
     }),
   
@@ -39,7 +42,8 @@ const useWorkoutStore = create((set, get) => ({
       // Ensure duration is properly formatted
       const preparedData = {
         ...workoutData,
-        duration: parseInt(workoutData.duration, 10) || 0
+        duration: parseInt(workoutData.duration, 10) || 0,
+        caloriesBurn: parseInt(workoutData.caloriesBurn, 10) || 0
       };
 
       const response = await fetch('/api/workouts', {

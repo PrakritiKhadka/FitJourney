@@ -152,6 +152,7 @@ export default function AdminUserManagement() {
               <th>Age</th>
               <th>Gender</th>
               <th>Email</th>
+              <th>Goal</th>
               <th>Joined Date</th>
               <th className="actions-header">Actions</th>
             </tr>
@@ -231,6 +232,7 @@ export default function AdminUserManagement() {
                       <td>{user.age}</td>
                       <td>{user.gender}</td>
                       <td>{user.email}</td>
+                      <td>{user.goal ? `${user.goal / 1000} kcal / month` : "No goals set"}</td>
                       <td>{formatDate(user.createdAt)}</td>
                       <td className="actions-cell">
                         <button
