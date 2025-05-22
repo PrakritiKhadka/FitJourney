@@ -299,6 +299,18 @@ const WorkoutForm = ({ initialData, isAdminMode, onSuccess }) => {
                 </div>
               </div>
 
+              <div className="form-field">
+                <label>Calories Burn (cal)</label>
+                <input
+                  type="number"
+                  name="caloriesBurn"
+                  value={formData.caloriesBurn}
+                  onChange={handleChange}
+                  required
+                  min="1"
+                />
+              </div>
+
               <div className="date-time-container">
                 <div className="form-field">
                   <label>Date</label>
