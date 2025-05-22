@@ -236,8 +236,8 @@ function WorkoutManagement() {
                   <th>Type</th>
                   <th>Duration</th>
                   <th>Intensity</th>
+                  <th>Calories Burn</th>
                   <th>Usage</th>
-                  <th>Status</th>
                   <th>Last Used</th>
                   <th>Created By</th>
                   {activeTab === 'admin' && <th>Actions</th>}
@@ -254,12 +254,8 @@ function WorkoutManagement() {
                         {workout.intensityLevel}
                       </span>
                     </td>
+                    <td>{workout.caloriesBurn} cal</td>
                     <td>{workout.usageCount || 0}</td>
-                    <td>
-                      <span className={`status-badge ${workout.completionStatus}`}>
-                        {workout.completionStatus}
-                      </span>
-                    </td>
                     <td>{workout.lastUsed ? formatDate(workout.lastUsed) : 'Never'}</td>
                     <td>{workout.createdBy?.name || workout.createdBy?.email || 'N/A'}</td>
                     <td className="action-cell">
@@ -339,6 +335,10 @@ function WorkoutManagement() {
                       <span className={`intensity-badge ${selectedWorkout.intensityLevel.toLowerCase()}`}>
                         {selectedWorkout.intensityLevel}
                       </span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Calories Burn</span>
+                      <span className="detail-value">{selectedWorkout.caloriesBurn} cal</span>
                     </div>
                   </div>
                 </div>
