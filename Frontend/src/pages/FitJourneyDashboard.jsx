@@ -28,12 +28,10 @@ const FitJourneyDashboard = () => {
     name: "",
     age: "",
     gender: "",
-    goals: [],
+    goal: 0,
   });
+  const [goal, setGoal] = useState(0);
   const [showGoalForm, setShowGoalForm] = useState(false);
-  const [goalData, setGoalData] = useState({
-    calories: 0,
-  });
   const [subscribedWorkouts, setSubscribedWorkouts] = useState([]);
   const [adminWorkouts, setAdminWorkouts] = useState([]);
   const [selectedWorkout, setSelectedWorkout] = useState(null);
@@ -216,9 +214,10 @@ const FitJourneyDashboard = () => {
       const response = await fetch("/api/users/goal", {
         method: "PUT",
         headers: {
+          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify({ goal: formData.goal }),
+        body: JSON.stringify({ goal: goal }),
       });
       if (!response.ok) {
         throw new Error("Failed to set goal");
@@ -517,11 +516,10 @@ const FitJourneyDashboard = () => {
                         <div key={blog._id} className="blog-preview-card">
                           <div className="blog-preview-image">
                             <img
-                              src={blog.coverImage || '/default-blog-image.jpg'}
+                              src={blog.coverImage}
                               alt={blog.title}
                               onError={(e) => {
                                 e.target.onerror = null;
-                                e.target.src = '/default-blog-image.jpg';
                               }}
                             />
                           </div>
@@ -580,15 +578,7 @@ const FitJourneyDashboard = () => {
                 <div className="profile-row">
                   <div className="profile-label">Goals</div>
                   <div className="profile-value">
-                    {user.goals && user.goals.length > 0 ? (
-                      <ul className="goals-list">
-                        {user.goals.map((goal, index) => (
-                          <li key={index}>{goal}</li>
-                        ))}
-                      </ul>
-                    ) : (
-                      "No goals set"
-                    )}
+                    {user.goal || "No goals set"} 
                   </div>
                 </div>
                 <div className="profile-actions">
@@ -676,9 +666,9 @@ const FitJourneyDashboard = () => {
                       <input
                         type="number"
                         id="calorieGoal"
-                        value={goalData.calories}
+                        value={goal}
                         onChange={(e) =>
-                          setGoalData({ ...goalData, calories: e.target.value })
+                          setGoal(e.target.value)
                         }
                         min="100"
                         max="2000"
