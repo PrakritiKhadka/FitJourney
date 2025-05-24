@@ -34,11 +34,11 @@ router.post('/signup/google', signupWithGoogle);
 router.post('/login', login);
 
 // Routes for users
-router.post('/users/register');
+// router.post('/users/register');
 router.get('/users/me', verifyLogin, getUser);
 router.put('/users/me', verifyLogin, updateUser); // Updated to use the new controller function
 router.put('/users/profile', verifyLogin, createOrUpdateProfile); // Keep this for fitness profile data
-router.delete('/users/delete');
+// router.delete('/users/delete');
 router.put('/users/goal', verifyLogin, updateUserGoal);
 
 // Admin User Management Routes
@@ -50,7 +50,7 @@ router.delete('/admin/users/:id', verifyLogin, deleteUserByAdmin);
 router.get('/profiles', verifyLogin, getProfile);
 router.post('/profiles', verifyLogin, createOrUpdateProfile);
 router.put('/profiles', verifyLogin, createOrUpdateProfile);
-router.delete('/profiles')
+// router.delete('/profiles')
 
 // Routes for goals
 router.get('/goals', verifyLogin, getGoals);
